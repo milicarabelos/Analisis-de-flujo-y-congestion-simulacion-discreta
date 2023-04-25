@@ -39,7 +39,7 @@ void Sink::finish(){
     recordScalar("Number of packets", delayStats.getCount());
 }
 
-void Sink::handleMessage(cMessage * msg) {
+void Sink::handleMessage(cMessage *msg) {
     // compute queuing delay
     simtime_t delay = simTime() - msg->getCreationTime();
     // update stats

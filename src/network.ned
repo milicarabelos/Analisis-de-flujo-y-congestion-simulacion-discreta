@@ -30,7 +30,7 @@ simple Queue
 {
     parameters:
         volatile int bufferSize;
-        volatile double serviceTime; // sec
+        //volatile double serviceTime; // sec
         @display("i=block/queue;q=buffer");
     gates:
         input in;

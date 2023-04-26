@@ -67,12 +67,14 @@ void Queue::handleMessage(cMessage *msg) {
             this->bubble("packet dropped");
             packetDropVector.record(1);
         }
-        buffer.insert(msg);
-        bufferSizeVector.record(buffer.getLength());
-        // if the server is idle
-        if (!endServiceEvent->isScheduled()) {
-            // start the service
-            scheduleAt(simTime() + 0, endServiceEvent);
+        else{
+            buffer.insert(msg);
+            bufferSizeVector.record(buffer.getLength());
+            // if the server is idle
+            if (!endServiceEvent->isScheduled()) {
+                // start the service
+                scheduleAt(simTime() + 0, endServiceEvent);
+            }
         }
     }
 }

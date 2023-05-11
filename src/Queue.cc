@@ -18,6 +18,10 @@ public:
     virtual ~Queue();
 protected:
     virtual void initialize();
+    virtual cQueue getBuffer(){ return this->buffer; };
+    virtual simtime_t getServiceTime(){return this->serviceTime; };
+    virtual cMessage *getEndServiceEvent() { return endServiceEvent; }
+    virtual void setServiceTime(simtime_t serviceTime){ this->serviceTime = serviceTime; };
     virtual void finish();
     virtual void handleMessage(cMessage *msg);
 };
@@ -37,7 +41,6 @@ void Queue::initialize() {
     packetDropVector.setName("packetDropVector");
     endServiceEvent = new cMessage("endService");
 }
-
 
 void Queue::finish() {
 }
@@ -77,6 +80,75 @@ void Queue::handleMessage(cMessage *msg) {
             }
         }
     }
-}
+};
+
+
+class TransportPacket : public cPacket {
+    bool slowDown;
+    bool speedUp;
+    int bufferSize;
+
+    public:
+        TransportPacket(const char *name = "TransportPacket", short kind = 2) : cPacket(name, kind) {}
+
+        int getBufferSize() const { return this->bufferSize; }
+        void setBufferSize(int bufferSize) {this->bufferSize = bufferSize; }
+
+        bool getSlowDown() const { return this->slowDown; }
+        void setSlowDown(bool b) { this->slowDown = b; }
+
+        bool getSpeedUp() const { return this->speedUp; }
+        void setSpeedUp(bool b) { this->speedUp = b; }
+};
+
+class TransportRx : Queue{
+
+    void handleMessage() {
+        TransportPacket *pkt = new TransportPacket();
+        pkt->setByteLength(20);
+        pkt->setBufferSize(par("buffersize").intValue() - this->getBuffer().getLength());
+        pkt->setSlowDown(false);
+        pkt->setSpeedUp(false);
+
+        if (pkt->getBufferSize() < this->getBuffer().getLength() * 0.30) {
+            pkt->setSpeedUp(true);
+        };
+
+        if (pkt->getBufferSize() > this->getBuffer().getLength() * 0.80) {
+            pkt->setSlowDown(true);
+        };
+        send(pkt, "toOut$o");
+    }
+};
+
+
+class TransportTx : Queue{
+
+    void handleMessage(cMessage *msg) {
+    // if msg is signaling an endServiceEvent
+    if (msg->getKind() == 2){
+        // msg is feedback
+        TransportPacket* pkt = (TransportPacket*)msg;
+        if (pkt->getSlowDown()) {
+            // slow down
+            this->setServiceTime(this->getServiceTime() * 1.5);
+            scheduleAt(simTime() + this->getServiceTime(), this->getEndServiceEvent());
+        }
+        else if (pkt->getSpeedUp()) {
+            // speed up
+            this->setServiceTime(this->getServiceTime() * 0.5);
+            scheduleAt(simTime() + this->getServiceTime(), this->getEndServiceEvent());
+        }
+        else {
+            scheduleAt(simTime() + this->getServiceTime(), this->getEndServiceEvent());
+        }
+    }
+    else if (msg->getKind() == 0) {
+        this->handleMessage(msg);
+    }
+    }
+};
+
+
 
 #endif /* QUEUE */

@@ -42,8 +42,8 @@ module NodeTx
     parameters:
         @display("i=block/routing");
     gates:
-        input in;
         output out;
+        input in;
     submodules:
         gen: Generator {
             parameters:
@@ -55,6 +55,7 @@ module NodeTx
         }
     connections:
         gen.out --> traTx.toApp;
+        in --> traTx.toOut$i;
         traTx.toOut$o --> out;
 }
 simple TransportRx
@@ -86,9 +87,9 @@ module NodeRx
         in --> traRx.toOut$i;
         //case 1:
         traRx.toApp --> {  datarate = 0.5Mbps; } --> sink.in;
-    	//case study 2:
-    	//traRx.out --> { datarate = 1Mbps; } --> sink.in;
-    	traRx.toOut$o --> out;
+        //case study 2:
+        //traRx.out --> { datarate = 1Mbps; } --> sink.in;
+        traRx.toOut$o --> out;
 }
 
 network Network
@@ -96,7 +97,7 @@ network Network
     @display("bgl=6");
     submodules:
         nodeTx: NodeTx {
-            @display("p=30,30");
+            @display("p=23,30");
         }
         queue: Queue {
             @display("p=138,30");
@@ -108,14 +109,10 @@ network Network
             @display("p=230,30");
         }
     connections:
-        nodeTx.out --> {  datarate = 1Mbps; delay = 100us; } --> queue.in;
         //case study 1:
+        nodeTx.out --> {  datarate = 1Mbps; delay = 100us; } --> queue.in;
         queue.out --> {  datarate = 1Mbps; delay = 100us; } --> nodeRx.in;
-
         nodeRx.out --> {  datarate = 1Mbps; delay = 100us; } --> queue1.in;
-
-        queue1.out --> {  datarate = 1Mbps; delay = 100us; } --> nodeTx.in;
-        //case study 2:
-        //queue.out --> { datarate = 0.5Mbps; delay = 100us; } --> nodeRx.in;
+        queue1.out --> nodeTx.in;
 }
 

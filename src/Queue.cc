@@ -9,12 +9,12 @@ using namespace omnetpp;
 class Queue: public cSimpleModule {
 private:
     cQueue buffer;
-    cOutVector bufferSizeVector;
     cOutVector packetDropVector;
     cMessage *endServiceEvent;
     simtime_t serviceTime;
 public:
     Queue();
+    cOutVector bufferSizeVector;
     virtual ~Queue();
 protected:
     virtual void initialize();
@@ -47,6 +47,7 @@ void Queue::finish() {
 
 void Queue::handleMessage(cMessage *msg) {
 
+    this->bubble("Hola soy queue");
     // if msg is signaling an endServiceEvent
     if (msg == endServiceEvent) {
         // if packet in buffer, send next one
@@ -101,7 +102,7 @@ class TransportPacket : public cPacket {
         void setSpeedUp(bool b) { this->speedUp = b; }
 };
 
-class TransportRx : Queue{
+class TransportRx : public Queue{
 
     void handleMessage() {
         TransportPacket *pkt = new TransportPacket();
@@ -122,9 +123,12 @@ class TransportRx : Queue{
 };
 
 
-class TransportTx : Queue{
+Define_Module(TransportRx);
+
+class TransportTx : public Queue{
 
     void handleMessage(cMessage *msg) {
+
     // if msg is signaling an endServiceEvent
     if (msg->getKind() == 2){
         // msg is feedback
@@ -144,11 +148,50 @@ class TransportTx : Queue{
         }
     }
     else if (msg->getKind() == 0) {
-        this->handleMessage(msg);
+
+        if (msg ==  this->getEndServiceEvent()) {
+                this->bubble(" O NO SE ELIMINO EL PUTO PAQUTE");
+              // if packet in buffer, send next one
+              if (!this->getBuffer().isEmpty()) {
+                  // dequeue packet
+                  for (int i=0; i<this->getBuffer().getLength(); i++){
+                      cPacket *pkt = (cPacket *)this->getBuffer().pop();
+                      // send packet
+                      send(pkt, "toOut$o");
+                      // start new service
+                      this->setServiceTime(pkt->getDuration());
+                  };
+                  scheduleAt(simTime() + this->getServiceTime(), this->getEndServiceEvent());
+              }
+          } else {  // if msg is a data packet
+              // enqueue the packet
+
+              // check buffer limit
+              // cambiado a intValue pq sino no me tira error
+
+              this->bubble("JOJO SE ENVIO");
+              if (this->getBuffer().getLength() >= par("bufferSize").intValue()) {
+                  // drop the packet
+                  this->bubble("dropeo el packete");
+                  delete msg;
+                  this->bubble("packet dropped");
+              }
+              else{
+                  this->getBuffer().insert(msg);
+                  bufferSizeVector.record(this->getBuffer().getLength());
+                  // if the server is idle
+                  this->bubble("JOIASJDOIASJDIOjs");
+                  if (!this->getEndServiceEvent()->isScheduled()) {
+                      // start the service
+                      scheduleAt(simTime() + 0,  this->getEndServiceEvent());
+                  }
+
+              }
+          }
     }
     }
 };
 
-
+Define_Module(TransportTx);
 
 #endif /* QUEUE */

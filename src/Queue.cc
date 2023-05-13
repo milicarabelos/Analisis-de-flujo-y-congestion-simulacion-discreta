@@ -39,6 +39,7 @@ Queue::~Queue() {
 void Queue::initialize() {
     buffer.setName("buffer");
     packetDropVector.setName("packetDropVector");
+    bufferSizeVector.setName("bufferSize");
     endServiceEvent = new cMessage("endService");
 }
 
@@ -47,7 +48,7 @@ void Queue::finish() {
 
 void Queue::handleMessage(cMessage *msg) {
 
-    this->bubble("Hola soy queue");
+    //this->bubble("Hola soy queue");
     // if msg is signaling an endServiceEvent
     if (msg == endServiceEvent) {
         // if packet in buffer, send next one
@@ -136,6 +137,7 @@ TransportRx::~TransportRx() {
 
 void TransportRx::initialize() {
     buffer.setName("bufferRx");
+
     packetDropVector.setName("packetDropVector");
     endServiceEvent = new cMessage("endService");
 }
@@ -226,6 +228,7 @@ TransportTx::~TransportTx() {
 void TransportTx::initialize() {
     buffer.setName("bufferTx");
     packetDropVector.setName("packetDropVector");
+    bufferSizeVector.setName("bufferSize");
     endServiceEvent = new cMessage("endService");
 }
 

@@ -5,7 +5,7 @@
 ## TITULO: Analisis de flujo y congestion de redes utilizando simulacion discreta
 
 ---
- 
+
 ## Astract resumen:
 dos parrafos de resumen del trabajo y los resultados
 Se nos proporcionó por la catedra un kickstarter de modelo de colas con un generador, una cola y un consumidor. Nuestra primer tarea fue realizar los cambios al codigo para transformar este modelo a uno que tenga en cuenta el tamaño de los paquetes y los buffers (tanto en los hosts como en los nodos intermedios). Y se nos plantearon dos casos a analziar:
@@ -65,6 +65,19 @@ Las ventajas de trabajar con un sistema de simulación de eventos discretos son:
 
 Mati: podemos pensar al sink como un proceso que se encarga de manejar los paquetes que llegan y en el caso 1 es lento.
 En el caso 1 de estudio, se presenta un problema de control de flujo. Esto debido a que el host receptor tiene una capacidad de almacenamiento de paquetes pequeña para la capacidad de envío del productor. Como resultado, el host receptor pierde paquetes cuando su buffer se llena y no tenga capacidad de almacenar nuevos paquetes entrantes ni de procesar los ya almacenados para liberar espacio en el buffer.
+
+En la simulacion realizada en omnet++ este tipo de comportamiento se puede observar mediante las estadisticas, los siguientes graficos muestran la evolucion de la ocupacion de cada uno de los buffers a medida que pasa el tiempo.
+
+los graficos fueron generados con intervalos de generacion de exponencial(x) con x [0.1 , 0.2 , 0.3, 0.6, 1] respectivamente
+
+![Grafico_0,1](./Graphics/1/BufferSize/0.1.png)
+
+![Grafico_0,2](./Graphics/1/BufferSize/0.2.png)
+
+​							![Grafico_0,3](./Graphics/1/BufferSize/0.3.png)
+​							![Grafico_0,6](./Graphics/1/BufferSize/0.6.png)
+
+![Grafico_1](./Graphics/1/BufferSize/1.png)
 
 Por otro lado, en el caso 2 de estudio, el problema es de congestión. El emisor tiene una alta capacidad para producir, pero la capacidad de carga de la subred (q es subred) no soporta este tráfico de datos. El nodo Queue no tiene la suficiente capacidad para almacenar y procesar los paquetes que NodeTx le manda. Es por esto que la pérdida de paquetes ocurre en Queue.
 

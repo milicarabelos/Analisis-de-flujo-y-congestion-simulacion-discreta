@@ -30,7 +30,7 @@ simple Sink
 simple TransportTx
 {
     parameters:
-        int bufferSize;
+        volatile int bufferSize;
         @display("i=block/queue;q=buffer");
     gates:
         input toApp;
@@ -61,7 +61,7 @@ module NodeTx
 simple TransportRx
 {
     parameters:
-        int bufferSize;
+        volatile int bufferSize;
         @display("i=block/queue;q=buffer");
     gates:
         output toApp;
@@ -81,6 +81,7 @@ module NodeRx
         }
         traRx: TransportRx {
             parameters:
+                
                 @display("p=75,190");
         }
     connections:

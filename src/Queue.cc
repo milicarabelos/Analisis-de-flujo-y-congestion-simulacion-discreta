@@ -107,13 +107,13 @@ class TransportRx : public cSimpleModule {
     bool isSlowed;
     cQueue buffer;
     cOutVector packetDropVector;
+    cOutVector bufferSizeVector;
     cMessage *endServiceEvent;
     cMessage *feedBackServiceEvent;
     simtime_t serviceTime;
 
    public:
     TransportRx();
-    cOutVector bufferSizeVector;
     virtual ~TransportRx();
 
    protected:
@@ -140,6 +140,7 @@ void TransportRx::initialize() {
     buffer.setName("bufferRx");
 
     packetDropVector.setName("packetDropVector");
+    bufferSizeVector.setName("bufferSize");
     endServiceEvent = new cMessage("endService");
     isSlowed = false;
 }

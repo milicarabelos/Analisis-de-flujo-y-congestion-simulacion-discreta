@@ -1,30 +1,33 @@
-# Estructura del informe:
+FALTA PASARLE UNA CORREGIDA POR CHAT PARA LA ORTOGRAFIA Y TODA LA WEA :)
 
 
-## TITULO: Analisis de flujo y congestion de redes utilizando simulacion discreta
+# Analisis de flujo y congestion de redes utilizando simulacion discreta
 
 ---
 
-## Astract resumen:
-dos parrafos de resumen del trabajo y los resultados
+## Resumen Abstracto:
+**dos parrafos de resumen del trabajo y los resultados**
+
 Se nos proporcionó por la catedra un kickstarter de modelo de colas con un generador, una cola y un consumidor. Nuestra primer tarea fue realizar los cambios al codigo para transformar este modelo a uno que tenga en cuenta el tamaño de los paquetes y los buffers (tanto en los hosts como en los nodos intermedios). Y se nos plantearon dos casos a analziar:
 	- Caso 1 (**Flujo**): La velocidad para procesar los paquetes entrantes del nuevo consumidor (NodeRx) es menor a la velocidad a la que el nuevo nodo generador (NodeTx) le envía.
 	- Caso 2 (**Congestion**): La velocidad y la capacidad de carga de la subred, representada por Queue, limita la cantidad de paquetes.
 En ambos casos ocurre la perdida de paquetes.
-2) Para solucionar este problema implementamos el siguiente algoritmo
+2) Para solucionar este problema implementamos una mejora que consiste en que el host emisor "detecte" cuando se esté saturando y así avisar al host emisor para que disminuya la velocidad a la que envía paquetes. Para el Caso 2 funciona de manera similar, pero esta vez el notifica la saturación es la red.
+
 # explicar que hicimos
 ---
 
 ## Introducción: 
-definimos el problemas (congestion y flujo). Referencias a otros articulos que abordan el mismo problema
+**definimos el problemas (congestion y flujo). Referencias a otros articulos que abordan el mismo problema**
 
-Antes de hablar de estos dos casos tenemos que ver de que se trata cuando hablamos de problema de flujo y de congestión.
+Primero veamos bien de que se trata los problemas de congestión y flujo. Cabe destacar que si bien estos problemas no son tratados únicamente por la capa de transporte, nos vamos a centrar en su mayoría en los aspectos del problema en dicha capa.
 
 El problema de flujo se refiere al caso donde un host transmisor rápido sobrecarga aun host receptor lento. Este problema se trata también en la capa de enlace, pero de una manera distinta, ya que esta capa se encarga de 'proteger' los paquetes mientras viajan a traves de un enlace y no mientras se encuantran dentro de un router. A nivel de capa de transporte nos interesa la fiabilidad de los datos, tratando de manejar la perdida y corrupción de paquetes se entreguen.
 
 Para verificar la entrega de paquetes se hace uso de los ACK (Acknowledgment) para verificar la llegada de los paquetes, temporizadores para saber cuanto tiempo esperar a la recepción de los ACK y buffers para poder guardar los paquetes enviado y recibidos. 
 
 Existen dos tipos de control de flujo: control de flujo basado en créditos y control de flujo basado en retroalimentación. El control de flujo basado en créditos implica que el receptor envíe un mensaje al transmisor cuando esté listo para recibir más datos. El transmisor solo envía datos cuando recibe este mensaje. El control de flujo basado en retroalimentación implica que el receptor envíe un mensaje al transmisor indicando cuántos datos puede recibir en ese momento.
+
 
 Por otro lado, la congestión es un problema que es manejado también por capa de transporte, pero mayoritariamente por la capa de red. La congestión en la red puede ocurrir cuando hay demasiados datos que intentan pasar por una parte de la red. Cuando esto sucede, los paquetes de datos pueden perderse o retrasarse, lo que puede afectar negativamente la eficiencia y el rendimiento de la red. Cuando una subred se encuentra congestionada lo que queremos hacer es bajar el flujo que mandamos por esa subred para descongestionar, o aumentar la capacidad de carga de esa subred.
 
@@ -37,7 +40,7 @@ A nivel de capa de transporte existen varios algoritmos para manejar el problema
 ---
 
 ## Marco metodologico : 
-como vamos a trabajar con nuestro estudio (simulacion discreta). Q es, como se trabaja, ventajas y desventajas, que se propone hacer. 
+**como vamos a trabajar con nuestro estudio (simulacion discreta). Q es, como se trabaja, ventajas y desventajas, que se propone hacer.**
 
 
 En este proyecto utilizamos Omnet++ para simular un modelo de colas y analizar la pérdida de paquetes en redes de comunicaciones. 
@@ -58,19 +61,19 @@ En nuestro sistema el tiempo de simulación avanza por medio de una cola de even
 
 
 En este proyecto se nos proporciona un kickstarter de un modelo de colas sensillo, en el cual contamos con un módulo *Generador*, una *Cola* y un *Consumidor*. En primera instancia se nos pide cambiar este modelo para que sea más completo y tenga en cuenta la nocion de capacidad, es decir la tasa de transferencia de datos y la memoria de los buffers. 
+
 Agregamos dos nuevos módulos, cada uno compuesto del módulo Generador y Consumidor anteriores. y modificaos la *Network* en base a estos nuevos cambios. Los casos de estudio que se explicarán en detalle más adelante se ajustan en el nuevo nodo Consumidor y en la red.
 Luego de analizar los datos en este modelo. Tendremos que implementar nuevas mejoras para diseñar un sistema de control de flujo y congestión entre el consumidor y el generador, para evitar la pérdida de datos por la saturacion de los buffers. Las modificaciones serán detalladas más adelante.
 
 ---
 
 ## Presentacion de Casos describiendo modelos (con graficas)
-
+**Reordenar o chequear el orden de la pregunta y respuesta**
 - Que diferencia observa entre el caso de estudio 1 y 2? Cual es la fuente limitante en cada uno? Investigue sobre la diferencia entre control de flujo y control de congestion (Figura 6-22 Tanenbaum)
 
-Mati: podemos pensar al sink como un proceso que se encarga de manejar los paquetes que llegan y en el caso 1 es lento.
-En el caso 1 de estudio, se presenta un problema de control de flujo. Esto debido a que el host receptor tiene una capacidad de almacenamiento de paquetes pequeña para la capacidad de envío del productor. Como resultado, el host receptor pierde paquetes cuando su buffer se llena y no tenga capacidad de almacenar nuevos paquetes entrantes ni de procesar los ya almacenados para liberar espacio en el buffer.
+En el caso 1 de estudio, se presenta un problema de control de flujo. Esto debido a que el host receptor tiene poca capacidad para manejar los paquetes que le envía el productor. Dicho de otra forma, podemos pensar al *Sink* como un proceso que se encarga de manejar los paquetes que llegan, y en este caso particular, el procesos es lento. Como resultado, el host receptor pierde paquetes cuando su buffer se llena y no puede almacenar nuevos paquetes entrantes.
 
-En la simulacion realizada en omnet++ este tipo de comportamiento se puede observar mediante las estadisticas, los siguientes graficos muestran la evolucion de la ocupacion de cada uno de los buffers a medida que pasa el tiempo.
+En la simulación realizada en omnet++ este tipo de comportamiento se puede observar mediante las estadisticas, los siguientes graficos muestran la evolucion de la ocupacion de cada uno de los buffers a medida que pasa el tiempo.
 
 los graficos fueron generados con intervalos de generacion de exponencial(x) con x [0.1 , 0.2 , 0.3, 0.6, 1] respectivamente
 
@@ -94,8 +97,8 @@ Ambos problemas llevan al mismo resultado, la pérdida de paquetes. Pero podemos
 ---
 
 ## Metodo: 
-Preguntas:|
 
+**Chequear donde incluir la pregunta y como organizarlo**
 - Como cree que se comporta su algoritmo de control de flujo y congestion? Funciona para el caso de estudio 1 y 2 por igual? Por que?
 
  En caso de implementar control de flujo y control en una sola estrategia, se recomienda evaluar el
@@ -115,6 +118,8 @@ detalle de los resultados de los algoritmos diseñados y una pequeña conclusion
 ## Discusion:
 Logros, limitaciones y posibles mejoras del algoritmo propuesto.
 
+
+**Hace falta mencionar que si bien se trato de manera eficaz los problemas de flujo y congestión. Estos algoritmos están lejos de ser algo idóneo y ya existen otros algorimos mucho más refinados. Se puede tratar como un primer asercamiento los problemas y hay mucho que construir sobre lo ya trabajado. Por ejemplo podríamos mejorar.....(COMPLETAR)**
 ---
 
 ## Referencias: 
@@ -127,4 +132,4 @@ Bibliografia (indicando autor), si es una pagina cuando la usamos (referencia al
 - Autor, B. (Año). *Título del capítulo o sección.* En A. Autor (Ed.), Título del libro (pp. xx-xx). Editorial.
 
 - Página web. *Título de la página.* Fecha de acceso. URL.
-
+-  researchgate.net *The OMNET++ discrete event simulation system* 14/05/2023 https://www.researchgate.net/publication/228460521_The_OMNET_discrete_event_simulation_system

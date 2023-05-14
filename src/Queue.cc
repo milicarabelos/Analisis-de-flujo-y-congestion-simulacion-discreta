@@ -170,16 +170,15 @@ void TransportRx::handleMessage(cMessage *msg) {
             packetDropVector.record(1);
         }
         else{
-            float actual_buff_length = buffer.getLength();
             buffer.insert(msg);
             bufferSizeVector.record(buffer.getLength());
             // if the server is idle
             if (!endServiceEvent->isScheduled()) {
                 // start the service
-                scheduleAt(simTime() + 0, endServiceEvent);
+                scheduleAt(simTime(), endServiceEvent);
             }
 
-            if (actual_buff_length * 0.80 < buffer.getLength()) {
+            if (buffer.getLength() > par("bufferSize").intValue() * 0.8) {
             TransportPacket *pkt = new TransportPacket();
             pkt->setByteLength(20);
             pkt->setBufferSize(par("bufferSize").intValue() - buffer.getLength());
@@ -187,7 +186,7 @@ void TransportRx::handleMessage(cMessage *msg) {
             pkt->setSpeedUp(false);
             pkt->setSlowDown(true);
                 send(pkt, "toOut$o");
-            };
+            }
         }
     }
     };
@@ -199,6 +198,7 @@ private:
     cOutVector packetDropVector;
     cMessage *endServiceEvent;
     simtime_t serviceTime;
+    float simTimeOffset;
 public:
     TransportTx();
     cOutVector bufferSizeVector;
@@ -226,6 +226,7 @@ TransportTx::~TransportTx() {
 void TransportTx::initialize() {
     buffer.setName("bufferTx");
     packetDropVector.setName("packetDropVector");
+    simTimeOffset = 1;
     endServiceEvent = new cMessage("endService");
 }
 
@@ -239,11 +240,11 @@ void TransportTx::handleMessage(cMessage *msg) {
             TransportPacket* pkt = (TransportPacket*)msg;
             if (pkt->getSlowDown()) {
                 // slow down
-                this->setServiceTime(this->getServiceTime() * 3.0);
+                simTimeOffset = simTimeOffset * 2.0;
             }
             else if (pkt->getSpeedUp()) {
                 // speed up
-                this->setServiceTime(this->getServiceTime() * 0.5);
+                simTimeOffset = simTimeOffset * 0.5;
             }
         }
     else if (msg->getKind() == 0) {
@@ -256,7 +257,7 @@ void TransportTx::handleMessage(cMessage *msg) {
             // send packet
             send(pkt, "toOut$o");
             // start new service
-            serviceTime = pkt->getDuration();
+            serviceTime = pkt->getDuration()  * simTimeOffset;
             scheduleAt(simTime() + serviceTime, endServiceEvent);
         }
     } else {  // if msg is a data packet
@@ -276,7 +277,7 @@ void TransportTx::handleMessage(cMessage *msg) {
             // if the server is idle
             if (!endServiceEvent->isScheduled()) {
                 // start the service
-                scheduleAt(simTime() + 0, endServiceEvent);
+                scheduleAt(simTime() * simTimeOffset, endServiceEvent);
             }
         }
     }

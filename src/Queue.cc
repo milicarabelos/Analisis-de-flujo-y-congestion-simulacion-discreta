@@ -1,27 +1,29 @@
 #ifndef QUEUE
 #define QUEUE
 
-#include <string.h>
 #include <omnetpp.h>
+#include <string.h>
 
 using namespace omnetpp;
 
-class Queue: public cSimpleModule {
-private:
+class Queue : public cSimpleModule {
+   private:
     cQueue buffer;
     cOutVector packetDropVector;
     cMessage *endServiceEvent;
     simtime_t serviceTime;
-public:
+
+   public:
     Queue();
     cOutVector bufferSizeVector;
     virtual ~Queue();
-protected:
+
+   protected:
     virtual void initialize();
-    virtual cQueue getBuffer(){ return this->buffer; };
-    virtual simtime_t getServiceTime(){return this->serviceTime; };
+    virtual cQueue getBuffer() { return this->buffer; };
+    virtual simtime_t getServiceTime() { return this->serviceTime; };
     virtual cMessage *getEndServiceEvent() { return endServiceEvent; }
-    virtual void setServiceTime(simtime_t serviceTime){ this->serviceTime = serviceTime; };
+    virtual void setServiceTime(simtime_t serviceTime) { this->serviceTime = serviceTime; };
     virtual void finish();
     virtual void handleMessage(cMessage *msg);
 };
@@ -47,9 +49,8 @@ void Queue::finish() {
 }
 
 void Queue::handleMessage(cMessage *msg) {
-
-    //this->bubble("Hola soy queue");
-    // if msg is signaling an endServiceEvent
+    // this->bubble("Hola soy queue");
+    //  if msg is signaling an endServiceEvent
     if (msg == endServiceEvent) {
         // if packet in buffer, send next one
         if (!buffer.isEmpty()) {
@@ -71,8 +72,7 @@ void Queue::handleMessage(cMessage *msg) {
             delete msg;
             this->bubble("packet dropped");
             packetDropVector.record(1);
-        }
-        else{
+        } else {
             buffer.insert(msg);
             bufferSizeVector.record(buffer.getLength());
             // if the server is idle
@@ -84,43 +84,44 @@ void Queue::handleMessage(cMessage *msg) {
     }
 };
 
-
 class TransportPacket : public cPacket {
     bool slowDown;
     bool speedUp;
     int bufferSize;
 
-    public:
-        TransportPacket(const char *name = "TransportPacket", short kind = 2) : cPacket(name, kind) {}
+   public:
+    TransportPacket(const char *name = "TransportPacket", short kind = 2) : cPacket(name, kind) {}
 
-        int getBufferSize() const { return this->bufferSize; }
-        void setBufferSize(int bufferSize) {this->bufferSize = bufferSize; }
+    int getBufferSize() const { return this->bufferSize; }
+    void setBufferSize(int bufferSize) { this->bufferSize = bufferSize; }
 
-        bool getSlowDown() const { return this->slowDown; }
-        void setSlowDown(bool b) { this->slowDown = b; }
+    bool getSlowDown() const { return this->slowDown; }
+    void setSlowDown(bool b) { this->slowDown = b; }
 
-        bool getSpeedUp() const { return this->speedUp; }
-        void setSpeedUp(bool b) { this->speedUp = b; }
+    bool getSpeedUp() const { return this->speedUp; }
+    void setSpeedUp(bool b) { this->speedUp = b; }
 };
 
-
-class TransportRx: public cSimpleModule {
-private:
+class TransportRx : public cSimpleModule {
+   private:
+    bool isSlowed;
     cQueue buffer;
     cOutVector packetDropVector;
     cMessage *endServiceEvent;
     cMessage *feedBackServiceEvent;
     simtime_t serviceTime;
-public:
+
+   public:
     TransportRx();
     cOutVector bufferSizeVector;
     virtual ~TransportRx();
-protected:
+
+   protected:
     virtual void initialize();
-    virtual cQueue getBuffer(){ return this->buffer; };
-    virtual simtime_t getServiceTime(){return this->serviceTime; };
+    virtual cQueue getBuffer() { return this->buffer; };
+    virtual simtime_t getServiceTime() { return this->serviceTime; };
     virtual cMessage *getEndServiceEvent() { return endServiceEvent; }
-    virtual void setServiceTime(simtime_t serviceTime){ this->serviceTime = serviceTime; };
+    virtual void setServiceTime(simtime_t serviceTime) { this->serviceTime = serviceTime; };
     virtual void finish();
     virtual void handleMessage(cMessage *msg);
 };
@@ -140,13 +141,13 @@ void TransportRx::initialize() {
 
     packetDropVector.setName("packetDropVector");
     endServiceEvent = new cMessage("endService");
+    isSlowed = false;
 }
 
 void TransportRx::finish() {
 }
 
 void TransportRx::handleMessage(cMessage *msg) {
-
     this->bubble("Hola soy queue");
     // if msg is signaling an endServiceEvent
     if (msg == endServiceEvent) {
@@ -170,47 +171,58 @@ void TransportRx::handleMessage(cMessage *msg) {
             delete msg;
             this->bubble("packet dropped");
             packetDropVector.record(1);
-        }
-        else{
-            float actual_buff_length = buffer.getLength();
+        } else {
             buffer.insert(msg);
             bufferSizeVector.record(buffer.getLength());
             // if the server is idle
             if (!endServiceEvent->isScheduled()) {
                 // start the service
-                scheduleAt(simTime() + 0, endServiceEvent);
+                scheduleAt(simTime(), endServiceEvent);
             }
 
-            if (actual_buff_length * 0.80 < buffer.getLength()) {
-            TransportPacket *pkt = new TransportPacket();
-            pkt->setByteLength(20);
-            pkt->setBufferSize(par("bufferSize").intValue() - buffer.getLength());
-            pkt->setSlowDown(false);
-            pkt->setSpeedUp(false);
-            pkt->setSlowDown(true);
+            if (not isSlowed and (buffer.getLength() > par("bufferSize").intValue() * 0.8)) {
+                isSlowed = true;
+                TransportPacket *pkt = new TransportPacket();
+                pkt->setByteLength(20);
+                pkt->setBufferSize(par("bufferSize").intValue() - buffer.getLength());
+                pkt->setSlowDown(false);
+                pkt->setSpeedUp(false);
+                pkt->setSlowDown(true);
                 send(pkt, "toOut$o");
-            };
+            }
+            if (isSlowed and (buffer.getLength() < par("bufferSize").intValue() * 0.6)) {
+                isSlowed = false;
+                TransportPacket *pkt = new TransportPacket();
+                pkt->setByteLength(20);
+                pkt->setBufferSize(par("bufferSize").intValue() - buffer.getLength());
+                pkt->setSlowDown(false);
+                pkt->setSpeedUp(true);
+                pkt->setSlowDown(false);
+                send(pkt, "toOut$o");
+            }
         }
     }
-    };
+};
 
-
-class TransportTx: public cSimpleModule {
-private:
+class TransportTx : public cSimpleModule {
+   private:
     cQueue buffer;
     cOutVector packetDropVector;
     cMessage *endServiceEvent;
     simtime_t serviceTime;
-public:
+    float simTimeOffset;
+
+   public:
     TransportTx();
     cOutVector bufferSizeVector;
     virtual ~TransportTx();
-protected:
+
+   protected:
     virtual void initialize();
-    virtual cQueue getBuffer(){ return this->buffer; };
-    virtual simtime_t getServiceTime(){return this->serviceTime; };
+    virtual cQueue getBuffer() { return this->buffer; };
+    virtual simtime_t getServiceTime() { return this->serviceTime; };
     virtual cMessage *getEndServiceEvent() { return endServiceEvent; }
-    virtual void setServiceTime(simtime_t serviceTime){ this->serviceTime = serviceTime; };
+    virtual void setServiceTime(simtime_t serviceTime) { this->serviceTime = serviceTime; };
     virtual void finish();
     virtual void handleMessage(cMessage *msg);
 };
@@ -229,6 +241,7 @@ void TransportTx::initialize() {
     buffer.setName("bufferTx");
     packetDropVector.setName("packetDropVector");
     bufferSizeVector.setName("bufferSize");
+    simTimeOffset = 1;
     endServiceEvent = new cMessage("endService");
 }
 
@@ -236,53 +249,49 @@ void TransportTx::finish() {
 }
 
 void TransportTx::handleMessage(cMessage *msg) {
+    if (msg->getKind() == 2) {
+        // msg is feedback
+        TransportPacket *pkt = (TransportPacket *)msg;
+        if (pkt->getSlowDown()) {
+            // slow down
+            simTimeOffset = simTimeOffset * 2.5;
+        } else if (pkt->getSpeedUp()) {
+            // speed up
+            simTimeOffset = 1;
+        }
+    } else if (msg->getKind() == 0) {
+        // if msg is signaling an endServiceEvent
+        if (msg == endServiceEvent) {
+            // if packet in buffer, send next one
+            if (!buffer.isEmpty()) {
+                // dequeue packet
+                cPacket *pkt = (cPacket *)buffer.pop();
+                // send packet
+                send(pkt, "toOut$o");
+                // start new service
+                serviceTime = pkt->getDuration() * simTimeOffset;
+                scheduleAt(simTime() + serviceTime, endServiceEvent);
+            }
+        } else {  // if msg is a data packet
+            // enqueue the packet
 
-    if (msg->getKind() == 2){
-            // msg is feedback
-            TransportPacket* pkt = (TransportPacket*)msg;
-            if (pkt->getSlowDown()) {
-                // slow down
-                this->setServiceTime(this->getServiceTime() * 3.0);
-            }
-            else if (pkt->getSpeedUp()) {
-                // speed up
-                this->setServiceTime(this->getServiceTime() * 0.5);
-            }
-        }
-    else if (msg->getKind() == 0) {
-    // if msg is signaling an endServiceEvent
-    if (msg == endServiceEvent) {
-        // if packet in buffer, send next one
-        if (!buffer.isEmpty()) {
-            // dequeue packet
-            cPacket *pkt = (cPacket *)buffer.pop();
-            // send packet
-            send(pkt, "toOut$o");
-            // start new service
-            serviceTime = pkt->getDuration();
-            scheduleAt(simTime() + serviceTime, endServiceEvent);
-        }
-    } else {  // if msg is a data packet
-        // enqueue the packet
-
-        // check buffer limit
-        // cambiado a intValue pq sino no me tira error
-        if (buffer.getLength() >= par("bufferSize").intValue()) {
-            // drop the packet
-            delete msg;
-            this->bubble("packet dropped");
-            packetDropVector.record(1);
-        }
-        else{
-            buffer.insert(msg);
-            bufferSizeVector.record(buffer.getLength());
-            // if the server is idle
-            if (!endServiceEvent->isScheduled()) {
-                // start the service
-                scheduleAt(simTime() + 0, endServiceEvent);
+            // check buffer limit
+            // cambiado a intValue pq sino no me tira error
+            if (buffer.getLength() >= par("bufferSize").intValue()) {
+                // drop the packet
+                delete msg;
+                this->bubble("packet dropped");
+                packetDropVector.record(1);
+            } else {
+                buffer.insert(msg);
+                bufferSizeVector.record(buffer.getLength());
+                // if the server is idle
+                if (!endServiceEvent->isScheduled()) {
+                    // start the service
+                    scheduleAt(simTime() * simTimeOffset, endServiceEvent);
+                }
             }
         }
-    }
     }
 };
 

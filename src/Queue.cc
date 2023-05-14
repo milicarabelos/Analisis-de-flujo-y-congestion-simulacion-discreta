@@ -208,14 +208,15 @@ void TransportRx::handleMessage(cMessage *msg) {
 class TransportTx : public cSimpleModule {
    private:
     cQueue buffer;
-    cOutVector packetDropVector;
     cMessage *endServiceEvent;
     simtime_t serviceTime;
+
     float simTimeOffset;
 
    public:
     TransportTx();
     cOutVector bufferSizeVector;
+    cOutVector packetSend;
     virtual ~TransportTx();
 
    protected:
@@ -240,7 +241,7 @@ TransportTx::~TransportTx() {
 
 void TransportTx::initialize() {
     buffer.setName("bufferTx");
-    packetDropVector.setName("packetDropVector");
+    packetSend.setName("packetSend");
     bufferSizeVector.setName("bufferSize");
     simTimeOffset = 1;
     endServiceEvent = new cMessage("endService");
@@ -272,6 +273,7 @@ void TransportTx::handleMessage(cMessage *msg) {
                 // start new service
                 serviceTime = pkt->getDuration() * simTimeOffset;
                 scheduleAt(simTime() + serviceTime, endServiceEvent);
+                packetSend.record(1);
             }
         } else {  // if msg is a data packet
             // enqueue the packet
@@ -282,7 +284,6 @@ void TransportTx::handleMessage(cMessage *msg) {
                 // drop the packet
                 delete msg;
                 this->bubble("packet dropped");
-                packetDropVector.record(1);
             } else {
                 buffer.insert(msg);
                 bufferSizeVector.record(buffer.getLength());

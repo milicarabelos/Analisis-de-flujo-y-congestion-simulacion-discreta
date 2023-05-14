@@ -13,6 +13,7 @@ private:
 public:
     Generator();
     virtual ~Generator();
+    cOutVector packetGenVector;
 protected:
     virtual void initialize();
     virtual void finish();
@@ -22,7 +23,6 @@ Define_Module(Generator);
 
 Generator::Generator() {
     sendMsgEvent = NULL;
-
 }
 
 Generator::~Generator() {
@@ -55,6 +55,7 @@ void Generator::initialize() {
     //sendMsgEvent->setByteLength(12500);
     // schedule the first event at random time
     //linea de chat para solucion :scheduleAt(simTime(), sendMsgEvent);
+    packetGenVector.setName("packetGen");
     scheduleAt(par("generationInterval"),sendMsgEvent);
 }
 
@@ -69,6 +70,7 @@ void Generator::handleMessage(cMessage *msg) {
     pkt->setByteLength(par("packetByteSize"));
     // send to the output
     send(pkt, "out");
+    packetGenVector.record(1);
     // compute the new departure time
     simtime_t departureTime = simTime() + par("generationInterval");
     // schedule the new packet generation

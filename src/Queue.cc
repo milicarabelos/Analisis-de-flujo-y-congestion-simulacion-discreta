@@ -47,7 +47,6 @@ void Queue::finish() {
 
 void Queue::handleMessage(cMessage *msg) {
 
-    this->bubble("Hola soy queue");
     // if msg is signaling an endServiceEvent
     if (msg == endServiceEvent) {
         // if packet in buffer, send next one
@@ -105,6 +104,7 @@ class TransportPacket : public cPacket {
 
 class TransportRx: public cSimpleModule {
 private:
+    bool isSlowed;
     cQueue buffer;
     cOutVector packetDropVector;
     cMessage *endServiceEvent;
@@ -138,6 +138,7 @@ void TransportRx::initialize() {
     buffer.setName("bufferRx");
     packetDropVector.setName("packetDropVector");
     endServiceEvent = new cMessage("endService");
+    isSlowed = false;
 }
 
 void TransportRx::finish() {
@@ -178,13 +179,24 @@ void TransportRx::handleMessage(cMessage *msg) {
                 scheduleAt(simTime(), endServiceEvent);
             }
 
-            if (buffer.getLength() > par("bufferSize").intValue() * 0.8) {
-            TransportPacket *pkt = new TransportPacket();
-            pkt->setByteLength(20);
-            pkt->setBufferSize(par("bufferSize").intValue() - buffer.getLength());
-            pkt->setSlowDown(false);
-            pkt->setSpeedUp(false);
-            pkt->setSlowDown(true);
+            if (not isSlowed and (buffer.getLength() > par("bufferSize").intValue() * 0.8)) {
+                isSlowed = true;
+                TransportPacket *pkt = new TransportPacket();
+                pkt->setByteLength(20);
+                pkt->setBufferSize(par("bufferSize").intValue() - buffer.getLength());
+                pkt->setSlowDown(false);
+                pkt->setSpeedUp(false);
+                pkt->setSlowDown(true);
+                send(pkt, "toOut$o");
+            }
+            if (isSlowed and (buffer.getLength() < par("bufferSize").intValue() * 0.6)){
+                isSlowed = false;
+                TransportPacket *pkt = new TransportPacket();
+                pkt->setByteLength(20);
+                pkt->setBufferSize(par("bufferSize").intValue() - buffer.getLength());
+                pkt->setSlowDown(false);
+                pkt->setSpeedUp(true);
+                pkt->setSlowDown(false);
                 send(pkt, "toOut$o");
             }
         }
@@ -240,11 +252,11 @@ void TransportTx::handleMessage(cMessage *msg) {
             TransportPacket* pkt = (TransportPacket*)msg;
             if (pkt->getSlowDown()) {
                 // slow down
-                simTimeOffset = simTimeOffset * 2.0;
+                simTimeOffset = simTimeOffset * 2.5;
             }
             else if (pkt->getSpeedUp()) {
                 // speed up
-                simTimeOffset = simTimeOffset * 0.5;
+                simTimeOffset = 1;
             }
         }
     else if (msg->getKind() == 0) {

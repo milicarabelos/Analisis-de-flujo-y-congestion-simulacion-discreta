@@ -1,8 +1,8 @@
 FALTA PASARLE UNA CORREGIDA POR CHAT PARA LA ORTOGRAFIA Y TODA LA WEA :)
-INFORME : Laboratorio 3 
+# Analisis de flujo y congestion de redes utilizando simulacion discreta
 
+Laboratorio 3 de la cátedra Redes y Sistemas Distribuidos 
 Grupo 01
-
 Integrantes :
 
 -   *Bazán Tomás*
@@ -14,14 +14,27 @@ Integrantes :
 ## Indice
 
 1. [Resumen Abstracto](#Resumen-Abstracto:)
+
 2. [Introducción](#Introducción:)
+
 3. [Marco metodológico](#Marco-metodológico-:)
-4. [Presentacion de Casos describiendo modelos](#Presentacion-de-Casos-describiendo-modelos-(con-graficas))
+
+4. [Presentación de Casos describiendo modelos](#Presentacion-de-Casos-describiendo-modelos-(con-graficas))
+
+   ​	- [Caso 1: Problema de flujo](#Caso-1-:-Problema-de-flujo)
+
+   ​	- [Caso 2: Problema de congestión](#Caso-2:-Problema-de-congestión)
+
 5. [Método](#Método:)
+
 6. [Resultados](#Resultados:)
-7. [Discusión:](#Discusión:)
+  - [Caso 1](#Caso 1)
+  - [Caso 2](#Caso 2)
+
+7. [Discusión](#Discusión:)
+
 8. [Bibliografía](#Bibliografía)
-# Analisis de flujo y congestion de redes utilizando simulacion discreta
+
 
 ---
 
@@ -161,15 +174,15 @@ Luego de analizar los datos en este modelo. Tendremos que implementar nuevas mej
 
 ​	Para comprender mejor el comportamiento de nuestra red, generamos dos gráficos que son comunes a ambos casos de estudio: "Carga útil vs carga ofrecida" y "Delay". Ambos gráficos fueron generados a partir de coordenadas (x,y) obtenidas al repetir la simulación 5 veces con intervalos de generación obtenidos de números aleatorios generados por la función exponencial centrada en 0.1, 0.2, 0.3, 0.6 y 1, respectivamente. Veamos cada uno de ellos en detalle y analicemos la información que nos brindan:
 
-1. ​	Gráfico de Carga útil vs carga ofrecida: Este gráfico nos muestra la relación entre la carga útil, es decir, la cantidad de paquetes que llegan efectivamente al sink o nodo receptor, y la carga ofrecida, que representa la cantidad total de paquetes generados por el emisor que van a ser enviados por la red hacia el receptor.
+1. ​	**Gráfico de Carga útil vs carga ofrecida:** Este gráfico nos muestra la relación entre la carga útil, es decir, la cantidad de paquetes que llegan efectivamente al sink o nodo receptor, y la carga ofrecida, que representa la cantidad total de paquetes generados por el emisor que van a ser enviados por la red hacia el receptor.
 
 ![carga-1](./Graphics/CargaUtilYDelay/carga.png)
 
-​	Podemos observar que cuando la carga ofrecida se acerca a los 1000 paquetes, nuestra función, que 	venía siendo lineal hasta este punto, cambia su comportamiento y genera un nuevo tramo donde todavía tenemos una función lineal, pero con una tasa de crecimiento mucho menor. Esto sucede porque en este punto comenzamos a perder paquetes. Podemos notar que la carga ofrecida en este segundo tramo varía desde aproximadamente 1000 hasta 2000 paquetes, mientras que la carga útil no llega a superar los 1000 paquetes. La información que nos proporciona este análisis es que la diferencia entre la cantidad de paquetes en el eje x y la cantidad de paquetes en el eje y representa los paquetes que se están perdiendo debido a algún buffer saturado en la red. Siguiendo la informacion que nos proporcionaron los graficos sobre tamaño del buffer en el tiempo anteriormente anteriormente, sabemos que esto ocurre en el nodo receptor (Rx) en el caso 1 y en el nodo Queue (subred) en el caso 2.
+​	Podemos observar que cuando la carga ofrecida se acerca a los 1000 paquetes, nuestra función, que venía siendo lineal hasta este punto, cambia su comportamiento y genera un nuevo tramo donde todavía tenemos una función lineal, pero con una tasa de crecimiento mucho menor. Esto sucede porque en este punto comenzamos a perder paquetes. Podemos notar que la carga ofrecida en este segundo tramo varía desde aproximadamente 1000 hasta 2000 paquetes, mientras que la carga útil no llega a superar los 1000 paquetes. La información que nos proporciona este análisis es que la diferencia entre la cantidad de paquetes en el eje x y la cantidad de paquetes en el eje y representa los paquetes que se están perdiendo debido a algún buffer saturado en la red. Siguiendo la información que previamente nos proporcionaron los gráficos sobre el tamaño del buffer en el tiempo , sabemos que esto ocurre en el nodo receptor (Rx) en el caso 1 y en el nodo Queue (subred) en el caso 2.
 
-2. ​	Delay: Este gráfico muestra la relación entre la carga ofrecida, es decir la cantidad total de paquetes generados por el emisor y enviados a través de la red hacia el receptor, y el retardo por simulación. El retardo por simulación se refiere al promedio, en segundos, de la diferencia de tiempo entre el envío de un paquete hacia la subred mediante el emisor hasta su llegada efectiva al nodo receptor.![delay-1](./Graphics/CargaUtilYDelay/delay.png)
+2. ​	**Delay:** Este gráfico muestra la relación entre la carga ofrecida, es decir la cantidad total de paquetes generados por el emisor y enviados a través de la red hacia el receptor, y el retardo por simulación. El retardo por simulación se refiere al promedio, en segundos, de la diferencia de tiempo entre el envío de un paquete del emisor hacia la subred hasta su llegada efectiva al nodo receptor.![delay-1](./Graphics/CargaUtilYDelay/delay.png)
 
-​	En este caso, también es evidente que existe un punto de inflexión cerca de los 1000 paquetes de carga ofrecida. Este comportamiento se debe a la pérdida de paquetes mencionada anteriormente. Cuando un paquete se pierde según nuestro modelo, el tiempo registrado entre su envío y llegada tiende a infinito, ya que nunca llegará (a menos que sea retransmitido por el emisor, pero este problema de retransmisión corresponde a la capa de transporte, la cual no es relevante en este proyecto). Sin embargo, debemos considerar que en nuestra simulación, esta "infinitud" está limitada por un tiempo máximo de simulación de 200 segundos, por lo que ese valor representa el infinito dentro de nuestro entorno de simulación.A medida que aumenta la carga útil y se pierden más paquetes en la red, el promedio del tiempo de retardo se ve cada vez más afectado, con valores de delay que rondan los 200 segundos, lo que incrementa el promedio general.
+​	En este caso, también es evidente que existe un punto de inflexión cerca de los 1000 paquetes de carga ofrecida. Este comportamiento se debe a la pérdida de paquetes mencionada anteriormente. Cuando un paquete se pierde según nuestro modelo, el tiempo registrado entre su envío y llegada tiende a infinito, ya que nunca llegará (a menos que sea retransmitido por el emisor, pero este problema de retransmisión corresponde a la capa de transporte, la cual no es relevante en este proyecto). Sin embargo, debemos considerar que en nuestra simulación, esta "infinitud" está limitada por un tiempo máximo de simulación de 200 segundos, por lo que ese valor representa el infinito dentro de nuestro entorno de simulación. A medida que aumenta la carga útil y se pierden más paquetes en la red, el promedio del tiempo de retardo se ve cada vez más afectado, con valores de delay que rondan los 200 segundos, lo que incrementa el promedio general.
 
 ​	Además, se puede observar que desde los 200 hasta los 1000 paquetes ofrecidos (aproximadamente), también hay un aumento en el eje y. Esto se debe a que, aunque aún no se están perdiendo paquetes, el tiempo que tardan en llegar los paquetes aumenta cuando deben ser almacenados y esperar su turno para ser enviados, lo cual es un comportamiento típico de un buffer que tiene al menos un paquete encolado.
 
@@ -193,9 +206,9 @@ describe el algoritmo que queremos implementar para resolver estos conflictos de
 
 ## Resultados:
 
-detalle de los resultados de los algoritmos diseñados y una pequeña conclusion.
+**detalle de los resultados de los algoritmos diseñados y una pequeña conclusion.**
 
-caso 1
+### Caso 1
 
 <div style="text-align:center;">
   <img src="./Graphics/diseño_mejora/1/BufferSize/0.1.png" alt="Img-1_0.1" style="width:90%;">
@@ -218,7 +231,7 @@ caso 1
 ![carga-1](./Graphics/diseño_mejora/1/CargaUtilDelay/cargaconsink.png)
 
 
-caso 2
+### Caso 2
 
 <div style="text-align:center;">
   <img src="./Graphics/diseño_mejora/2/BufferSize/0.1.png" alt="Img-1_0.1" style="width:90%;">
@@ -247,14 +260,14 @@ ls
 ---
 
 ## Discusión:
-Logros, limitaciones y posibles mejoras del algoritmo propuesto.
+**Logros, limitaciones y posibles mejoras del algoritmo propuesto**.
 
 
 **Hace falta mencionar que si bien se trato de manera eficaz los problemas de flujo y congestión. Estos algoritmos están lejos de ser algo idóneo y ya existen otros algorimos mucho más refinados. Se puede tratar como un primer asercamiento los problemas y hay mucho que construir sobre lo ya trabajado. Por ejemplo podríamos mejorar.....(COMPLETAR)**
 ---
 
 ## Referencias: 
-Bibliografia (indicando autor), si es una pagina cuando la usamos (referencia al momento de verla)
+**Bibliografia (indicando autor), si es una pagina cuando la usamos (referencia al momento de verla)**
 
 ## Bibliografía
 

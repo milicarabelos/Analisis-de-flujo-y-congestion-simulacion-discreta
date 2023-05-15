@@ -1,6 +1,26 @@
 FALTA PASARLE UNA CORREGIDA POR CHAT PARA LA ORTOGRAFIA Y TODA LA WEA :)
+INFORME : Laboratorio 3 
 
+Grupo 01
 
+Integrantes :
+
+-   *Bazán Tomás*
+    
+-   *Carabelos Milagros*
+    
+-   *Pereyra Carrillo Juan Cruz*
+
+## Indice
+
+1. [Resumen Abstracto](#Resumen-Abstracto:)
+2. [Introducción](#Introducción:)
+3. [Marco metodológico](#Marco-metodológico-:)
+4. [Presentacion de Casos describiendo modelos](#Presentacion-de-Casos-describiendo-modelos-(con-graficas))
+5. [Método](#Método:)
+6. [Resultados](#Resultados:)
+7. [Discusión:](#Discusión:)
+8. [Bibliografía](#Bibliografía)
 # Analisis de flujo y congestion de redes utilizando simulacion discreta
 
 ---
@@ -40,7 +60,7 @@ A nivel de capa de transporte existen varios algoritmos para manejar el problema
 
 ---
 
-## Marco metodologico : 
+## Marco metodológico : 
 **como vamos a trabajar con nuestro estudio (simulacion discreta). Q es, como se trabaja, ventajas y desventajas, que se propone hacer.**
 
 
@@ -157,7 +177,7 @@ Luego de analizar los datos en este modelo. Tendremos que implementar nuevas mej
 
 ---
 
-## Metodo: 
+## Método: 
 
 **Chequear donde incluir la pregunta y como organizarlo**
 - Como cree que se comporta su algoritmo de control de flujo y congestion? Funciona para el caso de estudio 1 y 2 por igual? Por que?
@@ -209,6 +229,8 @@ caso 2
 </div>>
 
 
+ls
+
 
 <div style="clear:both;"></div>
 
@@ -224,7 +246,7 @@ caso 2
 
 ---
 
-## Discusion:
+## Discusión:
 Logros, limitaciones y posibles mejoras del algoritmo propuesto.
 
 

@@ -70,6 +70,7 @@ Luego de analizar los datos en este modelo. Tendremos que implementar nuevas mej
 
 ## Presentacion de Casos describiendo modelos (con graficas)
 **Reordenar o chequear el orden de la pregunta y respuesta**
+
 - Que diferencia observa entre el caso de estudio 1 y 2? Cual es la fuente limitante en cada uno? Investigue sobre la diferencia entre control de flujo y control de congestion (Figura 6-22 Tanenbaum)
 
 ​	En el caso 1 de estudio, se presenta un problema de control de flujo. Esto se debe a que el host receptor tiene poca capacidad para manejar los paquetes que le envía el productor. Dicho de otra forma, podemos considerar al *Sink* como un proceso encargado de manejar los paquetes que llegan, y en este caso particular, el proceso es lento en comparación con el proceso del generador, es decir, el host emisor. Como resultado, el host receptor o sink pierde paquetes cuando su búfer se llena y no puede almacenar nuevos paquetes entrantes.
@@ -175,51 +176,101 @@ describe el algoritmo que queremos implementar para resolver estos conflictos de
 
 detalle de los resultados de los algoritmos diseñados y una pequeña conclusion.
 
-caso 1
+​	Luego de implementar el algoritmo, generamos nuevamente las estadísticas utilizando las mismas configuraciones que en el caso inicial. Esto nos permite tener una representación gráfica de los cambios en el comportamiento de la red de manera más sencilla y visual.
+
+​	Analicemos los resultados...
+
+### Caso 1: Problema de flujo
+
+#### Análisis de "Ocupación de los buffers en el sistema"
 
 <div style="text-align:center;">
   <img src="./Graphics/diseño_mejora/1/BufferSize/0.1.png" alt="Img-1_0.1" style="width:90%;">
 </div>
-<div>
-  <img src="./Graphics/diseño_mejora/1/BufferSize/0.2.png" alt="img-1_0.2" style="width:45%; float:left;"">
-  <img src="./Graphics/diseño_mejora/1/BufferSize/0.3.png" alt="img-1_0.3" style="width:45%; float:right;">
-</div>>
+​	Una vez más, el caso más interesante de analizar es aquel correspondiente a un intervalo de generación que se basa en la función exponencial centrada en 0.1. Según los análisis detallados en la sección [Presentación de Casos describiendo modelos (con gráficas)] (ENLACE A LA SECCIÓN), sabemos que nuestro problema en cuanto a control de flujo se producia cuando el nodo Rx superaba su capacidad máxima de almacenamiento en el buffer, que es de 200 paquetes. En el gráfico, podemos observar que esta situación ya no ocurre, ya que mediante un mecanismo de control, el nodo Rx es capaz de enviar un mensaje al nodo generador (Tx) solicitando que disminuya la velocidad de envío de paquetes. De esta manera, el nodo Rx tiene tiempo suficiente para descongestionarse antes de perder paquetes.
 
-<div style="clear:both;"></div>
+​	También se puede observar que, al llegar a un punto en el que el buffer no está cerca de colapsar y ha tenido tiempo de descongestionarse durante unos 30 a 40 segundos aproximadamente, se comienza a enviar paquetes más rápidamente y la ocupacion del buffer Rx comienza a aumentar ligeramente. Esta situación se produce porque el nodo Rx también notifica cuando tiene capacidad para recibir paquetes más rápidamente, en un intento de mitigar el problema de la demora  excesiva en la entrega de los paquetes.
+
+​	Puede resultar extraño para el lector el comportamiento del buffer del nodo Tx. Recordemos que en este análisis proponemos un tamaño de buffer que podría considerarse "infinito" en términos de la cantidad de paquetes que puede manejar nuestra red en el tiempo de simulación observado. No nos preocupamos por el comportamiento del emisor, por lo tanto, lo que se observa en el gráfico es que al disminuir la cantidad de paquetes en el nodo Rx, aumenta la cantidad de paquetes en el nodo Tx. Esto no representa un problema, ya que el nodo Tx puede almacenar los paquetes que sean necesarios y enviarlos cuando la red pueda soportar el flujo.
+
 <div>
-  <img src="./Graphics/diseño_mejora/1/BufferSize/0.6.png" alt="img-1_0.6" style="width:45%; float:left;">
-  <img src="./Graphics/diseño_mejora/1/BufferSize/1.png" alt="img-1_1" style="width:45%; float:right;">
+  <img src="./Graphics/diseño_mejora/1/BufferSize/0.2.png" alt="img-1_0.2" style="width:50%; float:left;"">
+  <img src="./Graphics/diseño_mejora/1/BufferSize/0.3.png" alt="img-1_0.3" style="width:50%; float:right;">
+</div>>
+<div style="clear:both;"></div>
+
+<div>
+  <img src="./Graphics/diseño_mejora/1/BufferSize/0.6.png" alt="img-1_0.6" style="width:50%; float:left;">
+  <img src="./Graphics/diseño_mejora/1/BufferSize/1.png" alt="img-1_1" style="width:50%; float:right;">
 </div>
 
+
 <div style="clear:both;"></div>
 
-![carga-1](./Graphics/diseño_mejora/1/CargaUtilDelay/delay.png)
+​	En cuanto a los gráficos con intervalos de generación de 0.2, 0.3, 0.6 y 1, se mantienen iguales al caso inicial , ya que no se presenta ninguna situación en la cual el buffer del nodo receptor (Rx) se encuentre tan cerca de su valor máximo como para generar mensajes de retroalimentación que se envíen al nodo transmisor (Tx). En estos casos, no se requiere un mecanismo de control adicional, y la red funciona de manera estable sin la necesidad de ajustar la velocidad de envío de paquetes.
+
+#### Análisis de "Carga Util vs Carga ofrecida" y "Delay" 
+
+​	Hay una pequeña salvedad en cómo se tomaron las estadísticas luego de la mejora en el diseño. En la simulación inicial, todo lo que generaba el buffer de Tx era enviado por la red, por lo tanto, la carga ofrecida era igual a la cantidad de paquetes generados. Sin embargo, ahora pueden existir paquetes en el buffer de Tx que no serán enviados por la red, por lo tanto, la carga ofrecida en este caso se calcula como la suma de todos los paquetes que son enviados desde el nodo Tx en una simulación.
+
+​	Primero vamos a analizar el gráfico correspondiente a "Carga Util vs Carga ofrecida". 
+
 ![carga-1](./Graphics/diseño_mejora/1/CargaUtilDelay/cargasinsink.png)
-![carga-1](./Graphics/diseño_mejora/1/CargaUtilDelay/cargaconsink.png)
+	Si observamos la carga ofrecida, ahora el eje x se mueve desde los 200 paquetes hasta aproximadamente 1189. Este cambio en la cantidad de paquetes se produce porque estamos enviando solo los paquetes que el nodo Rx puede recibir, que son en cada una de las simulaciones [1189, 989, 659, 326, 200], en comparación con la simulación inicial donde enviábamos [1979, 989, 659, 326, 200] respectivamente. Una vez más, el caso donde podemos observar un cambio significativo es el primero de la lista, en el cual estamos fijando el valor del intervalo de generación a través de la función exponencial centrada en 0.1.
 
+​	Al observar este comportamiento, que es bastante similar al inicial hasta el punto cercano a los 1200 paquetes, puede parecer que no hemos mejorado mucho la situación de la red. Sin embargo, como nos resultaba un poco extraño que la carga útil difiriera de la ofrecida a partir de aproximadamente los 1000 paquetes, decidimos verificar dónde quedaban estos paquetes, que serían la diferencia entre la carga ofrecida y la carga útil, y obtuvimos un total de [153, 13, 4, 2, 0]. Si observamos cuántos paquetes quedan en el buffer del sink sin ser enviados pero tampoco perdidos en la red, obtenemos un total de [152, 14, 2, 1, 1]. Se puede observar que los valores son bastante similares. Los paquetes no llegan desde la queue que se encuentra en el nodo Rx al sink únicamente porque la simulación termina abruptamente a los 200s. Si en vez de terminarla de esta forma en este punto le pudiéramos decir al receptor que deje de mandar, podríamos asumir que al estar los paquetes en la red y existir espacio suficiente para almacenarlos en el nodo Rx, su envío sería exitoso.
 
-caso 2
+​	Teniendo esto en cuenta, realizamos el gráfico nuevamente pero tomando como carga útil la del punto uno más los paquetes que quedaron en el buffer del sink, y obtuvimos una función lineal que da a entender que no perdemos ningún paquete en la red.
+
+![carga-1_2](./Graphics/diseño_mejora/1/CargaUtilDelay/cargaconsink.png)
+	En cuanto al delay, es fácil notar que no alcanza valores muy elevados. Como mencionamos anteriormente, la mayoría de los paquetes enviados por el nodo Tx son recibidos por el sink. Al tener menos paquetes que no llegan "nunca" (es decir, en los 200 segundos de simulación), el promedio general de retardo es bastante bajo y no genera problemas significativos. La subida abrupta en el gráfico está relacionada con los paquetes que quedan en la cola del nodo Rx. Si asumimos que la simulación se ejecutara por unos segundos más sin que el nodo Tx envíe más paquetes, es probable que estos paquetes llegaran correctamente al sink. Estos paquetes adicionales no aumentarían significativamente el promedio general de retardo y probablemente seguiría una tendencia similar a la observada desde los 650 hasta los 950 paquetes aproximadamente.
+![delay-1](./Graphics/diseño_mejora/1/CargaUtilDelay/delay.png)
+
+---
+
+### Caso 2: Problema de congestión 
+
+#### Análisis de "Ocupación de los buffers en el sistema"
+
+​	Este caso es muy parecido al caso 1, pero introducimos una variación muy pequeña en el porcentaje de ocupación del buffer en el cual el nodo que genera el mensaje de feedback decide informar sobre su situación. Por esta razón, podemos notar en el primer gráfico que las oscilaciones son más prolongadas y hay menos subidas y bajadas durante una simulación.
 
 <div style="text-align:center;">
   <img src="./Graphics/diseño_mejora/2/BufferSize/0.1.png" alt="Img-1_0.1" style="width:90%;">
 </div>
+
+​	Nuevamente el caso más interesante de analizar es aquel correspondiente a un intervalo de generación que se basa en la función exponencial centrada en 0.1. Según los análisis detallados en la sección [Presentación de Casos describiendo modelos (con gráficas)] (ENLACE A LA SECCIÓN), sabemos que nuestro problema en cuanto a control de congestion se producia cuando el nodo queue superaba su capacidad máxima de almacenamiento en el buffer, que es de 200 paquetes. En el gráfico, podemos observar que esta situación ya no ocurre, ya que mediante un mecanismo de control, el nodo Queue es capaz de enviar un mensaje al nodo receptor (Rx) el cual lo va a retransmitir al nodo emisor Tx mediante otra subred intermediaria (queue1) solicitando que disminuya la velocidad de envío de paquetes. De esta manera, el nodo Queue tiene tiempo suficiente para descongestionarse antes de perder paquetes. De tomas maneras notar que llega al valor 200 por las cotas que se han elegido para considerar el buffer como "cerca de estar lleno" o "cerca de estar vacio" por lo tanto puede ser que tengamos una pequeña perdida de paquetes en ese punto que no sea perceptible en la escala en la que se generaron los graficos. 
+
+​	También se puede observar que, al llegar a un punto en el que el buffer no está cerca de colapsar y ha tenido tiempo de descongestionarse durante unos 140 a 150 segundos aproximadamente, se comienza a enviar paquetes más rápidamente y la ocupacion del buffer de Queue comienza a aumentar ligeramente. Esta situación se produce porque el nodo queue también puede generar un mensaje para notificar cuando tiene capacidad para recibir paquetes más rápidamente (el cual sera enviado por la red como mencionamos anteriormente) en un intento de mitigar el problema de la demora  excesiva en la entrega de los paquetes.
+
+​	El comportamiento del buffer Tx es completamente equivalente al del caso 1 
+
+
 <div>
-  <img src="./Graphics/diseño_mejora/2/BufferSize/0.2.png" alt="img-1_0.2" style="width:45%; float:left;"">
-  <img src="./Graphics/diseño_mejora/2/BufferSize/0.3.png" alt="img-1_0.3" style="width:45%; float:right;">
+  <img src="./Graphics/diseño_mejora/2/BufferSize/0.2.png" alt="img-1_0.2" style="width:50%; float:left;"">
+  <img src="./Graphics/diseño_mejora/2/BufferSize/0.3.png" alt="img-1_0.3" style="width:50%; float:right;">
 </div>>
-
-
-
 <div style="clear:both;"></div>
 
 <div>
-  <img src="./Graphics/diseño_mejora/2/BufferSize/0.6.png" alt="img-1_0.6" style="width:45%; float:left;">
-  <img src="./Graphics/diseño_mejora/2/BufferSize/1.png" alt="img-1_1" style="width:45%; float:right;">
+  <img src="./Graphics/diseño_mejora/2/BufferSize/0.6.png" alt="img-1_0.6" style="width:50%; float:left;">
+  <img src="./Graphics/diseño_mejora/2/BufferSize/1.png" alt="img-1_1" style="width:50%; float:right;">
 </div>
 
+
 <div style="clear:both;"></div>
+​	En cuanto a los gráficos con intervalos de generación de 0.2, 0.3, 0.6 y 1, se mantienen iguales al caso inicial , ya que no se presenta ninguna situación en la cual el buffer del nodo Queue o subred se encuentre tan cerca de su valor máximo como para generar mensajes de retroalimentación que se envíen por la red hasta llegar al nodo transmisor (Tx). En estos casos, no se requiere un mecanismo de control adicional, y la red funciona de manera estable sin la necesidad de ajustar la velocidad de envío de paquetes.
+
+#### Análisis de  "Carga Util vs Carga ofrecida" y "Delay" 
+
+​	De la misma forma que en el caso 1, los paquetes que enviamos ahora se encuentran entre los 200 y 1200 paquetes, una cantidad mucho menor que en nuestro caso original. Con la mejora implementada, los paquetes enviados son [1189, 989, 659, 326, 200], en comparación con [1979, 989, 659, 326, 200] en la simulación original. Esto se debe a que reducimos la velocidad de envío cada vez que el nodo queue está cerca de colapsar, por lo que los paquetes enviados son menos, pero son los que la red puede soportar.
+
+​	Sin embargo, si observamos los paquetes que llegan, obtenemos nuevamente [998, 976, 655, 324, 200]. Y si observamos la diferencia entre la carga ofrecida y la carga útil caso por caso, obtenemos [191, 13, 4, 2, 0]. Si observamos cuántos paquetes quedaron en el buffer del nodo queue, obtenemos [189.0, 14.0, 3.0, 1.0, 1.0]. Son números bastante parecidos, considerando también que tenemos que pasar por la queue del sink todavía para llegar a nuestro destino. Por lo tanto, no podemos asumir que estos paquetes puedan llegar de forma correcta, pero sí podemos entender que los paquetes parecen no estarse perdiendo en la red como esperábamos.
+
+
 
 ![carga-1](./Graphics/diseño_mejora/2/CargaUtilDelay/CargaUtil.png)
+
+​	En cuanto al análisis del retardo, es completamente equivalente al caso 1. Es decir, la subida repentina a partir de los 1000 paquetes se genera debido a los paquetes que quedan en la red y nunca llegan a su destino. Sin embargo, el resto del tiempo el retardo es bastante bajo, por lo que no se genera una sobrecarga de tiempo demasiado grande con la mejora implementada.
 ![carga-1](./Graphics/diseño_mejora/2/CargaUtilDelay/delay.png)
 
 ---
@@ -228,7 +279,7 @@ caso 2
 Logros, limitaciones y posibles mejoras del algoritmo propuesto.
 
 
-**Hace falta mencionar que si bien se trato de manera eficaz los problemas de flujo y congestión. Estos algoritmos están lejos de ser algo idóneo y ya existen otros algorimos mucho más refinados. Se puede tratar como un primer asercamiento los problemas y hay mucho que construir sobre lo ya trabajado. Por ejemplo podríamos mejorar.....(COMPLETAR)**
+**Hace falta mencionar que si bien se trato de manera eficaz los problemas de flujo y congestión. Estos algoritmos están lejos de ser algo idóneo y ya existen otros algorimos mucho más refinados. Se puede tratar como un primEn cuanto a los gráficos con intervalos de generación de 0.2, 0.3, 0.6 y 1, se mantienen iguales al caso 1, ya que no se presenta ninguna situación en la cual el buffer del nodo receptor (Rx) se encuentre tan cerca de su valor máximo como para generar mensajes de retroalimentación que se envíen al nodo transmisor (Tx). En estos casos, no se requiere un mecanismo de control adicional, y la red funciona de manera estable sin la necesidad de ajustar la velocidad de envío de paquetes.er asercamiento los problemas y hay mucho que construir sobre lo ya trabajado. Por ejemplo podríamos mejorar.....(COMPLETAR)**
 ---
 
 ## Referencias: 

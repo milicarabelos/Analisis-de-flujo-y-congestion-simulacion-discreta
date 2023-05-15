@@ -77,14 +77,22 @@ En la simulación realizada en omnet++ este tipo de comportamiento se puede obse
 
 los graficos fueron generados con intervalos de generacion de exponencial(x) con x [0.1 , 0.2 , 0.3, 0.6, 1] respectivamente
 
-![Grafico_0,1](./Graphics/1/BufferSize/0.1.png)
+<div style="text-align:center;">
+  <img src="./Graphics/1/BufferSize/0.1.png" alt="Img_1_0.1" style="width:90%;">
+</div>
 
-![Grafico_0,2](./Graphics/1/BufferSize/0.2.png)
+<div>
+  <img src="./Graphics/1/BufferSize/0.2.png" alt="img_1_0.2" style="width:45%; float:left;"">
+  <img src="./Graphics/1/BufferSize/0.3.png" alt="img_1_0.3" style="width:45%; float:right;"">
+</div>
 
-​							![Grafico_0,3](./Graphics/1/BufferSize/0.3.png)
-​							![Grafico_0,6](./Graphics/1/BufferSize/0.6.png)
+<div style="clear:both;"></div>
 
-![Grafico_1](./Graphics/1/BufferSize/1.png)
+<div>
+  <img src="./Graphics/1/BufferSize/0.6.png" alt="img_1_0.6" style="width:45%; float:left;">
+  <img src="./Graphics/1/BufferSize/1.png" alt="img_1_1" style="width:45%; float:right;">
+</div>
+<div style="clear:both;"></div>
 
 Por otro lado, en el caso 2 de estudio, el problema es de congestión. El emisor tiene una alta capacidad para producir, pero la capacidad de carga de la subred (q es subred) no soporta este tráfico de datos. El nodo Queue no tiene la suficiente capacidad para almacenar y procesar los paquetes que NodeTx le manda. Es por esto que la pérdida de paquetes ocurre en Queue.
 
@@ -92,7 +100,27 @@ Por otro lado, en el caso 2 de estudio, el problema es de congestión. El emisor
 
 Ambos problemas llevan al mismo resultado, la pérdida de paquetes. Pero podemos observar que la razón, y en algunos casos la solución, no es la misma. En la imagen podemos ver una representación de ambos problemas. Donde el dibujo **a)** representa el problema de flujo del caso 1 y el **b)** el problema de congestión del caso 2. Podemos decir que la diferencia fundamental entre estos casos es que el problema de control de flujo se refiere a la velocidad a la que se envían los datos, mientras que el control de congestión se refiere al manejo del tráfico en una red para evitar la congestión.
 
+<div style="text-align:center;">
+  <img src="./Graphics/2/BufferSize/0.1.png" alt="Img_2_0.1" style="width:90%;">
+</div>
 
+<div>
+  <img src="./Graphics/2/BufferSize/0.2.png" alt="img_2_0.2" style="width:45%; float:left;"">
+  <img src="./Graphics/2/BufferSize/0.3.png" alt="img_2_0.3" style="width:45%; float:right;"">
+</div>
+
+<div style="clear:both;"></div>
+
+<div>
+  <img src="./Graphics/2/BufferSize/0.6.png" alt="img_2_0.6" style="width:45%; float:left;">
+  <img src="./Graphics/2/BufferSize/1.png" alt="img_2_1" style="width:45%; float:right;">
+</div>
+<div style="clear:both;"></div>
+
+
+
+![carga-1](./Graphics/CargaUtilYDelay/carga.png)
+![delay-1](./Graphics/CargaUtilYDelay/delay.png)
 
 ---
 
@@ -111,7 +139,49 @@ describe el algoritmo que queremos implementar para resolver estos conflictos de
 ---
 
 ## Resultados:
+
+caso 1
+
+<div style="text-align:center;">
+  <img src="./Graphics/diseño_mejora/1/BufferSize/0.1.png" alt="Img-1_0.1" style="width:90%;">
+</div>
+<div>
+  <img src="./Graphics/diseño_mejora/1/BufferSize/0.2.png" alt="img-1_0.2" style="width:45%; float:left;"">
+  <img src="./Graphics/diseño_mejora/1/BufferSize/0.3.png" alt="img-1_0.3" style="width:45%; float:right;">
+</div>>
+
+
+
+<div style="clear:both;"></div>
+
+<div>
+  <img src="./Graphics/diseño_mejora/1/BufferSize/0.6.png" alt="img-1_0.6" style="width:45%; float:left;">
+  <img src="./Graphics/diseño_mejora/1/BufferSize/1.png" alt="img-1_1" style="width:45%; float:right;">
+</div>
+
+<div style="clear:both;"></div>
+
 detalle de los resultados de los algoritmos diseñados y una pequeña conclusion.
+
+<div style="text-align:center;">
+  <img src="./Graphics/diseño_mejora/2/BufferSize/0.1.png" alt="Img-1_0.1" style="width:90%;">
+</div>
+<div>
+  <img src="./Graphics/diseño_mejora/2/BufferSize/0.2.png" alt="img-1_0.2" style="width:45%; float:left;"">
+  <img src="./Graphics/diseño_mejora/2/BufferSize/0.3.png" alt="img-1_0.3" style="width:45%; float:right;">
+</div>>
+
+
+
+<div style="clear:both;"></div>
+
+<div>
+  <img src="./Graphics/diseño_mejora/2/BufferSize/0.6.png" alt="img-1_0.6" style="width:45%; float:left;">
+  <img src="./Graphics/diseño_mejora/2/BufferSize/1.png" alt="img-1_1" style="width:45%; float:right;">
+</div>
+
+<div style="clear:both;"></div>
+
 
 ---
 

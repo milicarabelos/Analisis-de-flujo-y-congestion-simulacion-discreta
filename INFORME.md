@@ -25,15 +25,17 @@ Integrantes :
 
    ​	- [Caso 2: Problema de congestión](#Caso-2:-Problema-de-congestión)
 
-5. [Método](#Método:)
+5. [Diseño](#Diseño:)
 
-6. [Resultados](#Resultados:)
+6. [Método](#Método:)
+
+7. [Resultados](#Resultados:)
   - [Caso 1](#Caso 1)
   - [Caso 2](#Caso 2)
 
-7. [Discusión](#Discusión:)
+8. [Discusión](#Discusión:)
 
-8. [Bibliografía](#Bibliografía)
+9. [Bibliografía](#Bibliografía)
 
 
 ---
@@ -189,7 +191,438 @@ Luego de analizar los datos en este modelo. Tendremos que implementar nuevas mej
 ​	Conociendo en detalle los problemas planteados por la simulación y los comportamientos que deseamos evitar, propondremos un algoritmo para mejorar la red. Luego generaremos gráficas similares para analizar los resultados de este cambio, con la expectativa de reducir la pérdida de paquetes y mantener un tiempo de entrega razonable para los paquetes.
 
 ---
+## Diseño:
+### TransportPacket
+Se ha agregado un nuevo tipo de paquete llamado TransportPacket para tener un control más detallado sobre la red y sus posibles problemas de congestión. Este paquete tiene tres atributos importantes.
+#### Variables:
+* slowDown: indica si la red debe reducir su velocidad de transmisión para evitar la congestión. Si esta variable es verdadera, significa que la red debe reducir la velocidad de transmisión para evitar la sobrecarga de los buffers.
 
+* speedUp: indica si la red debe aumentar su velocidad de transmisión para aprovechar la capacidad no utilizada de los buffers. Si esta variable es verdadera, significa que la red puede aumentar la velocidad de transmisión.
+
+* bufferSize: indica el tamaño del buffer necesario para almacenar el paquete en la cola. Es importante tener en cuenta que si el tamaño del buffer supera la capacidad máxima, los paquetes pueden perderse.
+
+En resumen, TransportPacket es un nuevo tipo de paquete que permite tener un control más detallado sobre la red y sus posibles problemas de congestión. Con las variables slowDown, speedUp y bufferSize, se pueden tomar medidas para evitar la congestión y aprovechar la capacidad no utilizada de los buffers.
+
+```
+class TransportPacket : public cPacket {
+    bool slowDown;
+    bool speedUp;
+    int bufferSize;
+
+    public:
+        TransportPacket(const char *name = "TransportPacket", short kind = 2) : cPacket(name, kind) {}
+
+        int getBufferSize() const { return this->bufferSize; }
+        void setBufferSize(int bufferSize) {this->bufferSize = bufferSize; }
+
+        bool getSlowDown() const { return this->slowDown; }
+        void setSlowDown(bool b) { this->slowDown = b; }
+
+        bool getSpeedUp() const { return this->speedUp; }
+        void setSpeedUp(bool b) { this->speedUp = b; }
+};
+```
+---
+## Caso 1: Problema de flujo
+Para resolver este problema, se ha propuesto la implementación de dos nuevas colas de paquetes, denominadas "TransportTx" y "TransportRx".
+
+
+### TransportTx
+Este código define una clase llamada TransportTx que hereda de la clase cSimpleModule en el framework OMNeT++.
+Esta clase representa un módulo que se encarga de enviar paquetes a través de un canal de comunicación.
+
+- Atributos:
+    - buffer: una cola para almacenar los paquetes que se van a enviar.
+    - endServiceEvent: un mensaje que se utiliza para indicar que el servidor ha terminado de enviar un paquete y está listo para enviar otro.
+    - serviceTime: el tiempo que se tarda en enviar un paquete.
+    - simTimeOffset: un factor de escala utilizado para ajustar el tiempo de simulación.
+
+- Métodos:
+    - getBuffer(): devuelve la cola de paquetes que se van a enviar.
+    - getServiceTime(): devuelve el tiempo que se tarda en enviar un paquete.
+    - getEndServiceEvent(): devuelve el mensaje endServiceEvent.
+    - setServiceTime(): establece el tiempo que se tarda en enviar un paquete.
+    - initialize(): inicializa los atributos de la clase.
+    - finish(): se llama al final de la simulación.
+    - handleMessage(): procesa los mensajes recibidos.
+
+El método initialize() inicializa los miembros de la clase y crea el evento endServiceEvent. El método handleMessage() es el método principal de la clase, que se encarga de procesar los mensajes entrantes y realizar las acciones necesarias.
+
+Si el mensaje entrante es una retroalimentación (feedback), se ajusta el simTimeOffset según la información de la retroalimentación.
+
+Si el mensaje entrante es un paquete de datos, se comprueba si la cola buffer está llena. Si la cola no está llena, el paquete se encola y se registra la longitud actual de la cola en bufferSizeVector. Si la cola está llena, se elimina el paquete y se muestra una burbuja de "packet dropped".
+
+Si el evento endServiceEvent está programado y se recibe un mensaje de este evento, se saca el siguiente paquete de la cola y se envía por el canal de comunicación. Se programa el evento endServiceEvent para cuando se termine de enviar el paquete, se actualiza el tiempo de servicio, y se registra en el vector packetSend.
+
+El método finish() es llamado al final de la simulación y no hace nada en esta implementación.
+
+Para utilizar esta clase, se puede instanciar un objeto TransportTx y luego conectarlo a otros módulos en la simulación. Para hacerlo, se debe incluir este código en un archivo .cc, junto con otros módulos necesarios, y luego compilar y ejecutar la simulación utilizando OMNeT++.
+
+### Code Snippet:
+
+```
+class TransportTx : public cSimpleModule {
+   private:
+    cQueue buffer;
+    cMessage *endServiceEvent;
+    simtime_t serviceTime;
+
+    float simTimeOffset;
+
+   public:
+    TransportTx();
+    cOutVector bufferSizeVector;
+    cOutVector packetSend;
+    virtual ~TransportTx();
+
+   protected:
+    virtual void initialize();
+    virtual cQueue getBuffer() { return this->buffer; };
+    virtual simtime_t getServiceTime() { return this->serviceTime; };
+    virtual cMessage *getEndServiceEvent() { return endServiceEvent; }
+    virtual void setServiceTime(simtime_t serviceTime) { this->serviceTime = serviceTime; };
+    virtual void finish();
+    virtual void handleMessage(cMessage *msg);
+};
+
+Define_Module(TransportTx);
+
+TransportTx::TransportTx() {
+    endServiceEvent = NULL;
+}
+
+TransportTx::~TransportTx() {
+    cancelAndDelete(endServiceEvent);
+}
+
+void TransportTx::initialize() {
+    buffer.setName("bufferTx");
+    packetSend.setName("packetSend");
+    bufferSizeVector.setName("bufferSize");
+    simTimeOffset = 1;
+    endServiceEvent = new cMessage("endService");
+}
+
+void TransportTx::finish() {
+}
+
+void TransportTx::handleMessage(cMessage *msg) {
+    if (msg->getKind() == 2) {
+        // msg is feedback
+        TransportPacket *pkt = (TransportPacket *)msg;
+        if (pkt->getSlowDown()) {
+            // slow down
+            simTimeOffset = simTimeOffset * 2.5;
+        } else if (pkt->getSpeedUp()) {
+            // speed up
+            simTimeOffset = 1;
+        }
+    } else if (msg->getKind() == 0) {
+        // if msg is signaling an endServiceEvent
+        if (msg == endServiceEvent) {
+            // if packet in buffer, send next one
+            if (!buffer.isEmpty()) {
+                // dequeue packet
+                cPacket *pkt = (cPacket *)buffer.pop();
+                // send packet
+                send(pkt, "toOut$o");
+                // start new service
+                serviceTime = pkt->getDuration() * simTimeOffset;
+                scheduleAt(simTime() + serviceTime, endServiceEvent);
+                packetSend.record(1);
+            }
+        } else {  // if msg is a data packet
+            // enqueue the packet
+
+            // check buffer limit
+            // cambiado a intValue pq sino no me tira error
+            if (buffer.getLength() >= par("bufferSize").intValue()) {
+                // drop the packet
+                delete msg;
+                this->bubble("packet dropped");
+            } else {
+                buffer.insert(msg);
+                bufferSizeVector.record(buffer.getLength());
+                // if the server is idle
+                if (!endServiceEvent->isScheduled()) {
+                    // start the service
+                    scheduleAt(simTime() * simTimeOffset, endServiceEvent);
+                }
+            }
+        }
+    }
+};
+```
+
+### TransportRx:
+TransportRx hereda de la clase cSimpleModule en el framework OMNeT++ para simular un nodo receptor de transporte. 
+
+- Atributos
+    - isSlowed: determina si se está ralentizando o no el tráfico de entrada.
+    - buffer: una cola donde se almacenan los paquetes recibidos.
+    - packetDropVector: se utiliza para almacenar el número de paquetes que se han descartado debido a que el tamaño del buffer ha alcanzado su límite.
+    - bufferSizeVector: se utiliza para almacenar el tamaño actual del buffer.
+    - endServiceEvent: mensaje que se utiliza para señalar el final del servicio de un paquete.
+    - feedBackServiceEvent: mensaje de feedback que se envía a la salida correspondiente.
+    - serviceTime: se utiliza para almacenar el tiempo de servicio de un paquete que se está procesando.
+- Métodos:
+    - initialize(): se utiliza para inicializar las variables de la clase.
+    - handleMessage(): se utiliza para manejar los mensajes que se reciben y se envían.
+    - finish(): se utiliza para finalizar la simulación.
+
+El método handleMessage comprueba el tipo de mensaje recibido. Si es un mensaje de feedback, lo envía a la salida correspondiente.
+* Si es un paquete de datos, lo encola en el buffer.
+* Si el buffer está lleno, el paquete se descarta. 
+* Si el servidor está inactivo, se programa un nuevo servicio. 
+* Si la cantidad de paquetes en el buffer supera el 80% del límite, se envía un mensaje de ralentización.
+* Si la cantidad de paquetes en el buffer cae por debajo del 60% del límite, se envía un mensaje de aceleración.
+
+### Code Snippet:
+```
+class TransportRx: public cSimpleModule {
+private:
+    bool isSlowed;
+    cQueue buffer;
+    cOutVector packetDropVector;
+    cOutVector bufferSizeVector;
+    cMessage *endServiceEvent;
+    cMessage *feedBackServiceEvent;
+    simtime_t serviceTime;
+
+   public:
+    TransportRx();
+    virtual ~TransportRx();
+
+   protected:
+    virtual void initialize();
+    virtual cQueue getBuffer() { return this->buffer; };
+    virtual simtime_t getServiceTime() { return this->serviceTime; };
+    virtual cMessage *getEndServiceEvent() { return endServiceEvent; }
+    virtual void setServiceTime(simtime_t serviceTime) { this->serviceTime = serviceTime; };
+    virtual void finish();
+    virtual void handleMessage(cMessage *msg);
+};
+
+Define_Module(TransportRx);
+
+TransportRx::TransportRx() {
+    endServiceEvent = NULL;
+}
+
+TransportRx::~TransportRx() {
+    cancelAndDelete(endServiceEvent);
+}
+
+void TransportRx::initialize() {
+    buffer.setName("bufferRx");
+
+    packetDropVector.setName("packetDropVector");
+    bufferSizeVector.setName("bufferSize");
+    endServiceEvent = new cMessage("endService");
+    isSlowed = false;
+}
+
+void TransportRx::finish() {
+}
+
+void TransportRx::handleMessage(cMessage *msg) {
+    if (msg->getKind() == 2){
+            // msg is feedback
+            TransportPacket* pkt = (TransportPacket*)msg;
+            send(pkt, "toOut$o");
+    } else if (msg->getKind() == 0) {
+    if (msg == endServiceEvent) {
+        // if packet in buffer, send next one
+        if (!buffer.isEmpty()) {
+            // dequeue packet
+            cPacket *pkt = (cPacket *)buffer.pop();
+            // send packet
+            send(pkt, "toApp");
+            // start new service
+            serviceTime = pkt->getDuration();
+            scheduleAt(simTime() + serviceTime, endServiceEvent);
+        }
+    } else {  // if msg is a data packet
+        // enqueue the packet
+
+        // check buffer limit
+        // cambiado a intValue pq sino no me tira error
+        if (buffer.getLength() >= par("bufferSize").intValue()) {
+            // drop the packet
+            delete msg;
+            this->bubble("packet dropped");
+            packetDropVector.record(1);
+        } else {
+            buffer.insert(msg);
+            bufferSizeVector.record(buffer.getLength());
+            // if the server is idle
+            if (!endServiceEvent->isScheduled()) {
+                // start the service
+                scheduleAt(simTime(), endServiceEvent);
+            }
+
+            if (not isSlowed and (buffer.getLength() > par("bufferSize").intValue() * 0.8)) {
+                isSlowed = true;
+                TransportPacket *pkt = new TransportPacket();
+                pkt->setByteLength(20);
+                pkt->setBufferSize(par("bufferSize").intValue() - buffer.getLength());
+                pkt->setSlowDown(false);
+                pkt->setSpeedUp(false);
+                pkt->setSlowDown(true);
+                send(pkt, "toOut$o");
+            }
+            if (isSlowed and (buffer.getLength() < par("bufferSize").intValue() * 0.6)) {
+                isSlowed = false;
+                TransportPacket *pkt = new TransportPacket();
+                pkt->setByteLength(20);
+                pkt->setBufferSize(par("bufferSize").intValue() - buffer.getLength());
+                pkt->setSlowDown(false);
+                pkt->setSpeedUp(true);
+                pkt->setSlowDown(false);
+                send(pkt, "toOut$o");
+            }
+        }}
+    }
+};
+```
+### Funcionamiento:
+
+El funcionamiento de estas colas se basa en la observación del estado de ocupación de la cola "TransportRx". Cuando esta cola alcanza un nivel de ocupación del 80%, se envía un paquete de control denominado "TransportPacket" con el atributo "slowDown" establecido en "True" a una segunda cola denominada "Queue1". Este paquete de control se encarga de notificar a la cola "TransportTx" que debe reducir el ritmo de envío de paquetes, para evitar la congestión en la red.
+
+En caso de que la cola "TransportRx" vuelva a tener una ocupación inferior al 40%, se envía un paquete de control "TransportPacket" con el atributo "slowDown" establecido en "False" y "speedUp" en "True" a la cola "Queue1", lo que indica a la cola "TransportTx" que debe aumentar el ritmo de envío de paquetes.
+
+La implementación de esta solución permitiría mejorar el rendimiento y la estabilidad de la red, evitando la congestión de paquetes en los nodos de recepción y disminuyendo la pérdida de datos en la red.
+
+
+---
+## Caso 2: Problema de congestión 
+Para abordar el problema de congestión, se ha implementado una solución que se basa en la observación del estado de ocupación de la cola "TransportRx". Cuando esta cola alcanza un nivel de ocupación del 50%, se envía un paquete de control denominado "TransportPacket" con el atributo "slowDown" establecido en "True" a una segunda cola denominada "Queue1". Este paquete de control se encarga de notificar a la cola "TransportTx" que debe reducir el ritmo de envío de paquetes, para evitar la congestión en la red.
+
+Asimismo, cuando la cola "TransportRx" vuelve a tener una ocupación inferior al 49%, se envía un paquete de control "TransportPacket" con el atributo "slowDown" establecido en "False" y "speedUp" en "True" a la cola "Queue1", lo que indica a la cola "TransportTx" que debe aumentar el ritmo de envío de paquetes.
+
+La implementación de esta solución ha permitido mejorar el rendimiento y la estabilidad de la red, evitando la congestión de paquetes en los nodos de recepción y disminuyendo la pérdida de datos en la red.
+
+En cuanto a la implementación, se ha modificado la clase Queue, permitiendo que esta envíe un mensaje a la cola TransportRx cuando el tipo de paquete es "2", redirigiéndolo a la cola TransportTx. La clase TransportTx, a su vez, se adecúa a lo comentado en el caso de estudio 1, reduciendo o aumentando el ritmo de envío de paquetes según corresponda.
+
+Es importante destacar que los valores del 50% y 49% que se han establecido en el código, corresponden a un ajuste realizado después de haber probado el sistema en diferentes escenarios. Se determinó que al programar los paquetes mediante el método scheduleAt(), existía un retardo en la actualización de la cola TransportTx cuando ya había paquetes programados, lo que podía llevar a la pérdida de paquetes si se establecían rangos más amplios. Por lo tanto, se optó por ajustar los valores de umbral para garantizar una actualización oportuna y adecuada de la cola y evitar la pérdida de paquetes.
+
+En resumen, se ha implementado una solución eficaz para solucionar el problema de congestión en la red, lo que se traduce en una mejora en la calidad del servicio y una disminución de la pérdida de datos.
+
+
+```
+
+class Queue: public cSimpleModule {
+private:
+    cQueue buffer;
+    cOutVector packetDropVector;
+    cMessage *endServiceEvent;
+    simtime_t serviceTime;
+    bool isSlowed;
+public:
+    Queue();
+    cOutVector bufferSizeVector;
+    virtual ~Queue();
+
+   protected:
+    virtual void initialize();
+    virtual cQueue getBuffer() { return this->buffer; };
+    virtual simtime_t getServiceTime() { return this->serviceTime; };
+    virtual cMessage *getEndServiceEvent() { return endServiceEvent; }
+    virtual void setServiceTime(simtime_t serviceTime) { this->serviceTime = serviceTime; };
+    virtual void finish();
+    virtual void handleMessage(cMessage *msg);
+};
+
+Define_Module(Queue);
+
+Queue::Queue() {
+    endServiceEvent = NULL;
+}
+
+Queue::~Queue() {
+    cancelAndDelete(endServiceEvent);
+}
+
+void Queue::initialize() {
+    buffer.setName("buffer");
+    packetDropVector.setName("packetDropVector");
+    bufferSizeVector.setName("bufferSize");
+    endServiceEvent = new cMessage("endService");
+    isSlowed = false;
+}
+
+void Queue::finish() {
+}
+
+void Queue::handleMessage(cMessage *msg) {
+    // this->bubble("Hola soy queue");
+    //  if msg is signaling an endServiceEvent
+    if (msg == endServiceEvent) {
+        // if packet in buffer, send next one
+        if (!buffer.isEmpty()) {
+            // dequeue packet
+            cPacket *pkt = (cPacket *)buffer.pop();
+            // send packet
+            send(pkt, "out");
+            // start new service
+            serviceTime = pkt->getDuration();
+            scheduleAt(simTime() + serviceTime, endServiceEvent);
+        }
+    } else {  // if msg is a data packet
+        // enqueue the packet
+
+        // check buffer limit
+        // cambiado a intValue pq sino no me tira error
+        if (buffer.getLength() >= par("bufferSize").intValue()) {
+            // drop the packet
+            delete msg;
+            this->bubble("packet dropped");
+            packetDropVector.record(1);
+        }
+        else{
+            if (not isSlowed and (buffer.getLength() > par("bufferSize").intValue() * 0.49)) {
+                isSlowed = true;
+                TransportPacket *pkt = new TransportPacket();
+                pkt->setByteLength(20);
+                pkt->setBufferSize(par("bufferSize").intValue() - buffer.getLength());
+                pkt->setSlowDown(false);
+                pkt->setSpeedUp(false);
+                pkt->setSlowDown(true);
+                scheduleAt(simTime() + 0, pkt);
+            }
+            if (isSlowed and (buffer.getLength() < par("bufferSize").intValue() * 0.4)){
+                isSlowed = false;
+                TransportPacket *pkt = new TransportPacket();
+                pkt->setByteLength(20);
+                pkt->setBufferSize(par("bufferSize").intValue() - buffer.getLength());
+                pkt->setSlowDown(false);
+                pkt->setSpeedUp(true);
+                pkt->setSlowDown(false);
+                scheduleAt(simTime() + 0, pkt);
+            }
+            buffer.insert(msg);
+            bufferSizeVector.record(buffer.getLength());
+            // if the server is idle
+            if (!endServiceEvent->isScheduled()) {
+                // start the service
+                scheduleAt(simTime() + 0, endServiceEvent);
+            }
+
+        }
+    }
+};
+
+```
+
+### Extra Info:
+Es importante mencionar que para lograr una mejora en la gestión de la congestión y el flujo en nuestra simulación, tuvimos que agregar el atributo "isSlowed" tanto en la cola de transmisión (Queue) como en el receptor de transporte (TransportRx).
+
+Esta adición fue necesaria para evitar que cada vez que se envíe un paquete, se actualice la cola de transmisión de tal manera que se restablezca la velocidad de envío y, por lo tanto, se deshaga cualquier mejora en la congestión y el flujo que hayamos implementado previamente.
+
+En otras palabras, al agregar el atributo "isSlowed" pudimos garantizar que las mejoras implementadas en la gestión de la congestión y el flujo se mantuvieran en su lugar, lo que nos permitió obtener resultados más precisos y confiables en nuestra simulación.
+
+
+---
 ## Método: 
 
 **Chequear donde incluir la pregunta y como organizarlo**

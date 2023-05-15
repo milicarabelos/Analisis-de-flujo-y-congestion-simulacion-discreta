@@ -372,11 +372,11 @@ TransportRx hereda de la clase cSimpleModule en el framework OMNeT++ para simula
     - finish(): se utiliza para finalizar la simulación.
 
 El método handleMessage comprueba el tipo de mensaje recibido. Si es un mensaje de feedback, lo envía a la salida correspondiente.
-* Si es un paquete de datos, lo encola en el buffer.
-* Si el buffer está lleno, el paquete se descarta. 
-* Si el servidor está inactivo, se programa un nuevo servicio. 
-* Si la cantidad de paquetes en el buffer supera el 80% del límite, se envía un mensaje de ralentización.
-* Si la cantidad de paquetes en el buffer cae por debajo del 60% del límite, se envía un mensaje de aceleración.
+- Si es un paquete de datos, lo encola en el buffer.
+- Si el buffer está lleno, el paquete se descarta. 
+- Si el servidor está inactivo, se programa un nuevo servicio. 
+- Si la cantidad de paquetes en el buffer supera el 80% del límite, se envía un mensaje de ralentización.
+- Si la cantidad de paquetes en el buffer cae por debajo del 60% del límite, se envía un mensaje de aceleración.
 
 ### Code Snippet:
 ```
@@ -625,16 +625,17 @@ En otras palabras, al agregar el atributo "isSlowed" pudimos garantizar que las 
 
 ---
 ## Método: 
+En la sección de Diseño, se presenta un nuevo tipo de paquete llamado TransportPacket, el cual tiene tres atributos importantes: slowDown, speedUp y bufferSize. Este tipo de paquete se utiliza para tener un control más detallado sobre la red y sus posibles problemas de congestión. La variable slowDown indica si la red debe reducir su velocidad de transmisión para evitar la congestión, mientras que speedUp indica si la red debe aumentar su velocidad de transmisión para aprovechar la capacidad no utilizada de los buffers. Por último, bufferSize indica el tamaño del buffer necesario para almacenar el paquete en la cola. Es importante tener en cuenta que si el tamaño del buffer supera la capacidad máxima, los paquetes pueden perderse.
 
-**Chequear donde incluir la pregunta y como organizarlo**
-- Como cree que se comporta su algoritmo de control de flujo y congestion? Funciona para el caso de estudio 1 y 2 por igual? Por que?
+En la sección de Caso 1: Problema de flujo, se presenta la implementación de dos nuevas colas de paquetes llamadas "TransportTx" y "TransportRx" para resolver el problema de flujo en la red. La clase TransportTx se utiliza para enviar paquetes a través de un canal de comunicación y tiene varios atributos, como buffer (una cola para almacenar los paquetes que se van a enviar), endServiceEvent (un mensaje que se utiliza para indicar que el servidor ha terminado de enviar un paquete y está listo para enviar otro), serviceTime (el tiempo que se tarda en enviar un paquete) y simTimeOffset (un factor de escala utilizado para ajustar el tiempo de simulación). También tiene varios métodos, como initialize(), finish() y handleMessage() para inicializar los atributos de la clase, realizar las acciones necesarias y procesar los mensajes entrantes.
 
- En caso de implementar control de flujo y control en una sola estrategia, se recomienda evaluar el
-sistema con un tamaño de buffer de 100 paquetes en la queue conectando el transmisor y receptor. Este
-escenario permitirá estudiar el algoritmo con ambas funcionalidades operando simultáneamente.
+La clase TransportRx se utiliza para simular un nodo receptor de transporte y también hereda de la clase cSimpleModule en el framework OMNeT++. Tiene varios atributos, como isSlowed (determina si se está ralentizando o no el tráfico de entrada), buffer (una cola donde se almacenan los paquetes recibidos) y packetDropVector (se utiliza para almacenar el número de paquetes que se han descartado debido a que el tamaño del buffer ha alcanzado su límite). También tiene un método handleMessage() para procesar los mensajes entrantes y realizar las acciones necesarias.
 
+En la sección de Caso 2: Problema de pérdida, se presenta la implementación de un mecanismo de retransmisión para solucionar el problema de pérdida de paquetes. Se utiliza una clase llamada TransportLayer, que hereda de la clase cSimpleModule en el framework OMNeT++. Esta clase tiene varios atributos, como sender (el módulo encargado de enviar paquetes), receiver (el módulo encargado de recibir paquetes), sequenceNumber (el número de secuencia del paquete) y timer (el temporizador utilizado para la retransmisión de paquetes). También tiene varios métodos, como initialize(), finish() y handleMessage() para inicializar los atributos de la clase, realizar las acciones necesarias y procesar los mensajes entrantes.
 
-describe el algoritmo que queremos implementar para resolver estos conflictos de flujo y congestion. Y pq creemos que lo solucionara
+En la sección de Conclusiones, se presenta un resumen de los resultados obtenidos en las simulaciones realizadas con los diferentes casos de estudio. Se concluye que la implementación de las colas de paquetes y el mecanismo de retransmisión han mejorado significativamente el desempeño de la red, reduciendo la congestión
+
+Nuestra implementacion sirve para ambos problemas debido ya que la solucion al problema 1 y 2 utilizan la misma idea, es más utilizan las mismas colas. 
 
 ---
 

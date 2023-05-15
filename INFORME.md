@@ -746,17 +746,12 @@ Nuestra implementacion sirve para ambos problemas debido ya que la solucion al p
 **Logros, limitaciones y posibles mejoras del algoritmo propuesto**.
 
 
-**Hace falta mencionar que si bien se trato de manera eficaz los problemas de flujo y congestión. Estos algoritmos están lejos de ser algo idóneo y ya existen otros algorimos mucho más refinados. Se puede tratar como un primEn cuanto a los gráficos con intervalos de generación de 0.2, 0.3, 0.6 y 1, se mantienen iguales al caso 1, ya que no se presenta ninguna situación en la cual el buffer del nodo receptor (Rx) se encuentre tan cerca de su valor máximo como para generar mensajes de retroalimentación que se envíen al nodo transmisor (Tx). En estos casos, no se requiere un mecanismo de control adicional, y la red funciona de manera estable sin la necesidad de ajustar la velocidad de envío de paquetes.er asercamiento los problemas y hay mucho que construir sobre lo ya trabajado. Por ejemplo podríamos mejorar.....(COMPLETAR)**
+**Hace falta mencionar que si bien se trato de manera eficaz los problemas de flujo y congestión. Estos algoritmos están lejos de ser algo idóneo y ya existen otros algorimos mucho más refinados. Se puede tratar como un primer asercamiento los problemas y hay mucho que construir sobre lo ya trabajado. Por ejemplo podríamos mejorar.....(COMPLETAR)**
 ---
 
-## Referencias: 
-**Bibliografia (indicando autor), si es una pagina cuando la usamos (referencia al momento de verla)**
 
 ## Bibliografía
 
 - Andrew S. Tanenbaum 5ta Edición. *Computer Networks* . Ed. Pearson
 
-- Autor, B. (Año). *Título del capítulo o sección.* En A. Autor (Ed.), Título del libro (pp. xx-xx). Editorial.
-
-- Página web. *Título de la página.* Fecha de acceso. URL.
 -  researchgate.net *The OMNET++ discrete event simulation system* 14/05/2023 https://www.researchgate.net/publication/228460521_The_OMNET_discrete_event_simulation_system

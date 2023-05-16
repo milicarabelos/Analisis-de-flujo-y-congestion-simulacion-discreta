@@ -20,21 +20,23 @@ Integrantes :
 
 4. [Presentación de Casos describiendo modelos](#Presentacion-de-Casos-describiendo-modelos-(con-graficas))
    - [Caso 1: Problema de flujo](#Caso-1-:-Problema-de-flujo)
-   
+
    - [Caso 2: Problema de congestión](#Caso-2-:-Problema-de-congestión)
-   
+
 5. [Diseño](#Diseño:)
 
 6. [Método](#Método:)
 
 7. [Resultados](#Resultados:)
-	- [Caso 1](#Caso-1:-Problema-de-flujo)
+  - [Caso 1](#Caso-1:-Problema-de-flujo)
 
-	- [Caso 2](#Caso-2:-Problema-de-congestión)
+  - [Caso 2](#Caso-2:-Problema-de-congestión)
 
-8. [Discusión](#Discusión:)
+8. [Discusión
 
-9. [Bibliografía](#Bibliografía)
+9. [Anexo : Errores en Omnet++](#Anexo-:-Errores-en-Omnet++)
+
+10. [Bibliografía](#Bibliografía)
 
 
 ---
@@ -746,6 +748,31 @@ En resumen, aunque ya existen algoritmos más refinados para abordar los problem
 
 ---
 
+## Anexo : Errores en Omnet++
+
+Si bien Omnet++ se basa en C++ y muchos errores son de este lenguaje, hay una familia de errores que ocurren mientras la simulación se ejecuta. Estos errores tienen una enumeración en hexadecimal y pueden referirse a errores que tienen que ver con errores en el código o en el sistema operativo. Si bien estos errores no son de Omnet++ sino que están relacionados con el Sistema Operativo (o el entorno de ejecución) donde se ejecuta Omnet++. Cabe destacar que algunos errores, a pesar de ser distintos, tiene el mismo código de salida, por ejemplo 139 puede significar Segmentation Fault o Illegal Instruction. Algunos de los códigos que pudimos encontrar son los siguientes (Notar que los códigos están convertidos a decimal, es decir el error 139 se corresponde al 8b):
+
+**0: Éxito.** La simulación se completó sin errores. 
+**1: Error general.** Este código de error se suele usar para errores sin especificar durante la simulación. 
+**2: Uso incorrecto de comandos de la terminal.** Indica que la simulación no fue ejecutada correctamente. 
+**126: Permiso denegado.** Indica que el usuario no tiene privilegios para ejecutar la simulación. 
+**127: Comando no encontrado.** El comando o el ejecutable para ejecutar la simulación no fue encontrado en la ruta del sistema. 
+**134: Abortado.** Indica que la simulación fue terminada forzosamente. Puede ocurrir por una señal externa como SIABRT. 
+**135: Error de bus.** La simulación intenta acceder a una dirección de memoria inválida, alineada a un bus de hardware específico. 
+**136: Excepción de punto flotante:** Este código sugiere que una operación aritmética que involucra números de punto flotante produjo un resultado excepcional, como una división por cero o una operación de punto flotante inválida. 
+**137: Sin memoria disponible.** Este error ocurre cuando el proceso de simulación agota la memoria disponible. A menudo indica un problema de diseño o configuración de la simulación, como asignar demasiada memoria para una ejecución de simulación en particular. 
+**139: Violación de segmento.** Este error ocurre cuando el proceso de simulación intenta acceder a memoria a la que no tiene permiso de acceso. Por lo general, indica un error de programación, como acceder a un puntero nulo o a una región de memoria fuera de límites. 
+**139: Instrucción no válida.** Este código suele ser causado por un error de hardware o software, como la ejecución de una instrucción de CPU inválida o no compatible. 
+**139: Terminado.** Este código indica que el proceso de simulación fue terminado explícitamente por una entidad externa, generalmente a través de una señal SIGKILL. Suele ocurrir cuando el proceso excede los límites de recursos o si un usuario lo termina forzosamente. 
+**141: Error de tubería.** Este error ocurre cuando se realiza una operación de escritura en una tubería rota o en una tubería sin lector. Puede suceder cuando hay una falla en la comunicación entre procesos o cuando un proceso intenta escribir en una tubería cerrada o inexistente. 
+**142: Reloj de alarma.** Este código sugiere que el proceso de simulación fue terminado por una señal de alarma, generalmente activada por un temporizador o una condición de tiempo específica. A menudo ocurre cuando un proceso excede un límite de tiempo predeterminado. 
+**143: Terminación por señal.** Este código indica que el proceso de simulación fue terminado de forma forzada por una señal externa, como una señal SIGTERM o SIGINT. 
+**255: Estado de salida fuera de rango.** Este código se utiliza cuando el estado de salida de la simulación está fuera del rango válido de 0-255.
+ **255: Error desconocido.** Este código se utiliza a menudo cuando no se puede determinar o es desconocida la razón de la terminación de la simulación.
+
+Recordar que no se debe tomar esta referencia como una guía exacta, sólo sirve como una aproximación a lo que tal vez ocurra.
+
+---
 
 ## Bibliografía
 

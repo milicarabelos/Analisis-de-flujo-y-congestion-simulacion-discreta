@@ -745,8 +745,20 @@ Nuestra implementacion sirve para ambos problemas debido ya que la solucion al p
 ## Discusión:
 **Logros, limitaciones y posibles mejoras del algoritmo propuesto**.
 
+Dentro de los logros que conseguimos:
+- Mitigar la perdida de paquetes sin generar un delay demasiado grande entre emision y recepcion de paquetes.
+- Abordar ambos problemas con una solucion conjunta.
+- Ajustar nuestras cotas de análisis para lograr un desempeño optimo.
 
-**Hace falta mencionar que si bien se trato de manera eficaz los problemas de flujo y congestión. Estos algoritmos están lejos de ser algo idóneo y ya existen otros algorimos mucho más refinados. Se puede tratar como un primer asercamiento los problemas y hay mucho que construir sobre lo ya trabajado. Por ejemplo podríamos mejorar.....(COMPLETAR)**
+Es importante mencionar que, aunque los algoritmos utilizados para abordar los problemas de flujo y congestión han sido efectivos, aún hay margen para mejorarlos. Estos algoritmos no son la solución perfecta, y ya existen otros algoritmos más refinados que podrían ser más adecuados para abordar estos problemas.
+
+No obstante, podemos considerar estos algoritmos como un primer acercamiento a la solución de los problemas de flujo y congestión en las redes de comunicaciones. A partir de lo que ya se ha trabajado, es posible construir y mejorar estos algoritmos.
+
+Una posible mejora que podríamos implementar en nuestro algoritmo sería agregar una conexión desde el nodo Transport Tx al generador, de manera que este último pueda recibir paquetes de feedback que le informen sobre el estado del buffer del nodo congestionado. De esta forma, cuando el buffer se encuentre en situaciones críticas, es decir, esté a punto de llenarse o vaciarse, el generador podría recibir una señal para dejar de generar más paquetes y evitar el llenado innecesario del buffer.
+
+En resumen, aunque ya existen algoritmos más refinados para abordar los problemas de flujo y congestión en las redes de comunicaciones, es importante reconocer que estos algoritmos son un primer paso importante para mejorar el rendimiento de las redes de comunicaciones. Con la incorporación de mejoras como la sugerida anteriormente, es posible continuar avanzando en la solución de estos problemas.
+
+
 ---
 
 

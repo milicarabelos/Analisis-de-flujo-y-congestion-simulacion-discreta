@@ -1,5 +1,4 @@
-FALTA PASARLE UNA CORREGIDA POR CHAT PARA LA ORTOGRAFIA Y TODA LA WEA :)
-# Analisis de flujo y congestion de redes utilizando simulacion discreta
+# Análisis de flujo y congestión de redes utilizando simulación discreta
 
 Laboratorio 3 de la cátedra Redes y Sistemas Distribuidos 
 Grupo 01
@@ -20,18 +19,18 @@ Integrantes :
 3. [Marco metodológico](#Marco-metodológico-:)
 
 4. [Presentación de Casos describiendo modelos](#Presentacion-de-Casos-describiendo-modelos-(con-graficas))
-
-   ​	- [Caso 1: Problema de flujo](#Caso-1-:-Problema-de-flujo)
-
-   ​	- [Caso 2: Problema de congestión](#Caso-2:-Problema-de-congestión)
-
+   - [Caso 1: Problema de flujo](#Caso-1-:-Problema-de-flujo)
+   
+   - [Caso 2: Problema de congestión](#Caso-2-:-Problema-de-congestión)
+   
 5. [Diseño](#Diseño:)
 
 6. [Método](#Método:)
 
 7. [Resultados](#Resultados:)
-  - [Caso 1](#Caso 1)
-  - [Caso 2](#Caso 2)
+	- [Caso 1](#Caso-1:-Problema-de-flujo)
+
+	- [Caso 2](#Caso-2:-Problema-de-congestión)
 
 8. [Discusión](#Discusión:)
 
@@ -41,24 +40,19 @@ Integrantes :
 ---
 
 ## Resumen Abstracto:
-**dos parrafos de resumen del trabajo y los resultados**
+​	Se nos proporcionó por la cátedra un kickstarter de modelo de colas con un generador, una cola y un consumidor. Nuestra primer tarea fue realizar los cambios al código para transformar este modelo a uno que tenga en cuenta el tamaño de los paquetes y los buffers (tanto en los hosts como en los nodos intermedios). Y se nos plantearon dos casos a analizar:
+​	- Caso 1 (**Flujo**): La velocidad para procesar los paquetes entrantes del nuevo consumidor (NodeRx) es menor a la velocidad a la que el nuevo nodo generador (NodeTx) le envía.
+​	- Caso 2 (**Congestión**): La velocidad y la capacidad de carga de la subred, representada por Queue, limita la cantidad de paquetes.
+​	En ambos casos ocurre la perdida de paquetes.
 
-Se nos proporcionó por la catedra un kickstarter de modelo de colas con un generador, una cola y un consumidor. Nuestra primer tarea fue realizar los cambios al codigo para transformar este modelo a uno que tenga en cuenta el tamaño de los paquetes y los buffers (tanto en los hosts como en los nodos intermedios). Y se nos plantearon dos casos a analziar:
-	- Caso 1 (**Flujo**): La velocidad para procesar los paquetes entrantes del nuevo consumidor (NodeRx) es menor a la velocidad a la que el nuevo nodo generador (NodeTx) le envía.
-	- Caso 2 (**Congestion**): La velocidad y la capacidad de carga de la subred, representada por Queue, limita la cantidad de paquetes.
-	En ambos casos ocurre la perdida de paquetes.
+​	Para solucionar este problema implementamos una mejora que consiste en que el host receptor "detecte" cuando se esté saturando y así avisar al host emisor para que disminuya la velocidad a la que envía paquetes. Para el Caso 2 funciona de manera similar, pero esta vez el que se encarga de notificar que el buffer esta cerca de llenarse es la red.
 
-2) Para solucionar este problema implementamos una mejora que consiste en que el host emisor "detecte" cuando se esté saturando y así avisar al host emisor para que disminuya la velocidad a la que envía paquetes. Para el Caso 2 funciona de manera similar, pero esta vez el notifica la saturación es la red.
-
-# explicar que hicimos
 ---
 
 ## Introducción: 
-**definimos el problemas (congestion y flujo). Referencias a otros articulos que abordan el mismo problema**
-
 Primero veamos bien de que se trata los problemas de congestión y flujo. Cabe destacar que si bien estos problemas no son tratados únicamente por la capa de transporte, nos vamos a centrar en su mayoría en los aspectos del problema en dicha capa.
 
-El problema de flujo se refiere al caso donde un host transmisor rápido sobrecarga aun host receptor lento. Este problema se trata también en la capa de enlace, pero de una manera distinta, ya que esta capa se encarga de 'proteger' los paquetes mientras viajan a traves de un enlace y no mientras se encuantran dentro de un router. A nivel de capa de transporte nos interesa la fiabilidad de los datos, tratando de manejar la perdida y corrupción de paquetes se entreguen.
+El problema de flujo se refiere al caso donde un host transmisor rápido sobrecarga aun host receptor lento. Este problema se trata también en la capa de enlace, pero de una manera distinta, ya que esta capa se encarga de 'proteger' los paquetes mientras viajan a través de un enlace y no mientras se encuentran dentro de un router. A nivel de capa de transporte nos interesa la fiabilidad de los datos, tratando de manejar la perdida y corrupción de paquetes se entreguen.
 
 Para verificar la entrega de paquetes se hace uso de los ACK (Acknowledgment) para verificar la llegada de los paquetes, temporizadores para saber cuanto tiempo esperar a la recepción de los ACK y buffers para poder guardar los paquetes enviado y recibidos. 
 
@@ -69,22 +63,19 @@ Por otro lado, la congestión es un problema que es manejado también por capa d
 
 Hay muchos enfoques a la hora de resolver este problema. Podemos mejorar los enlaces que son saturados frecuentemente (provisioning), también podemos adaptar las rutas a los patrones de tráfico (traffic-aware routing). Y si no es posible aumentar la capacidad de la subred una solución puede ser, por ejemplo en TCP, algunos host disminuirán la tasa de datos, por eso los host tiene mecanismos para detectar congestión.
 
-**El control de congestión se puede lograr mediante técnicas como control de congestión explícito e implícito. El control de congestión explícito implica que el receptor envíe un mensaje al transmisor indicando que la red está congestionada y que debe reducir la velocidad de envío de datos. El control de congestión implícito implica que el transmisor monitorea la congestión en la red y ajusta su velocidad de envío de datos en consecuencia.**
+El control de congestión se puede lograr mediante técnicas como control de congestión explícito e implícito. El control de congestión explícito implica que el receptor envíe un mensaje al transmisor indicando que la red está congestionada y que debe reducir la velocidad de envío de datos. El control de congestión implícito implica que el transmisor monitorea la congestión en la red y ajusta su velocidad de envío de datos en consecuencia.
 
-A nivel de capa de transporte existen varios algoritmos para manejar el problema, por ejemplo TCP Talhoe, o TCP Reno. Este último se trata de, una vez iniciada la conexión, se manda paquetes de forma exponencial hasta llegar a un umbral cierta cantidad de paquetes enviados, a partir de ese umbral se envian paquetes de con incrementos lineales. Cuando pierda paquetes (TCP asume que 3 acks duplicados implican una perdida de paquete) se fija el umbral a la mitad y se vuelve a enviar paquetes de forma lineal, esto se sigue repitiendo.
+A nivel de capa de transporte existen varios algoritmos para manejar el problema, por ejemplo TCP Talhoe, o TCP Reno. Este último se trata de, una vez iniciada la conexión, se manda paquetes de forma exponencial hasta llegar a un umbral cierta cantidad de paquetes enviados, a partir de ese umbral se envían paquetes de con incrementos lineales. Cuando pierda paquetes (TCP asume que 3 acks duplicados implican una perdida de paquete) se fija el umbral a la mitad y se vuelve a enviar paquetes de forma lineal, esto se sigue repitiendo.
 
 ---
 
 ## Marco metodológico : 
-**como vamos a trabajar con nuestro estudio (simulacion discreta). Q es, como se trabaja, ventajas y desventajas, que se propone hacer.**
-
-
 En este proyecto utilizamos Omnet++ para simular un modelo de colas y analizar la pérdida de paquetes en redes de comunicaciones. 
-Omnet++ es un entorno de simulación de sistemas de eventos discretos basado en C++ y utilizado para simular redes informáticas y otros sistemad distribuidos, la razón del por qué usar Omnet++ es que al tratar de modelar y estudiar problemas de red en capas inferiores (transporte, red y enlace) sería muy complicado la tarea de análisis y desarrollo de la aplicación en si, por esto es que nos apoyamos en Omnet++. Para entender mejor cómo funcion la simulación, es importante conocer algunos conceptos básicos sobre la simulación discreta.
+Omnet++ es un entorno de simulación de sistemas de eventos discretos basado en C++ y utilizado para simular redes informáticas y otros sistemas distribuidos, la razón del por qué usar Omnet++ es que al tratar de modelar y estudiar problemas de red en capas inferiores (transporte, red y enlace) sería muy complicado la tarea de análisis y desarrollo de la aplicación en si, por esto es que nos apoyamos en Omnet++. Para entender mejor cómo función la simulación, es importante conocer algunos conceptos básicos sobre la simulación discreta.
 
 La simulación discreta es una técnica utilizada para modelar y analizar sistemas dinámicos, en donde el tiempo se avanza en forma discreta, es decir, por medio de eventos que ocurren en momentos específicos del tiempo. Esto no da la posibilidad de estudiar en que ocurre entre estos eventos en nuestro sistema, por ejemplo si definimos nuestros eventos a un micro segundo de distancia, sería muy difícil estudiar que sucede dentro de un procesador en esos intervalos, sin embargo en, nuestra simulación podríamos tomarnos mucho tiempo y cómputo entre estos intervalos para saber que sucede en el sistema. Esto nos permite un alto nivel de detalle a la hora de análisis. Inversamente también nos facilita el estudio en modelos donde los eventos se distancian por un gran intervalo.
 
-En nuestro sistema el tiempo de simulación avanza por medio de una cola de eventos de distintos tipos (por ejemplo de eventos de arribo, partida, servicio, etc). El estado del sistema puede cambiar entre eventos, los eventos pueden crear otros y agregarlos en la cola en algun tiempo determinado. 
+En nuestro sistema el tiempo de simulación avanza por medio de una cola de eventos de distintos tipos (por ejemplo de eventos de arribo, partida, servicio, etc). El estado del sistema puede cambiar entre eventos, los eventos pueden crear otros y agregarlos en la cola en algún tiempo determinado. 
 
 
 |                           Ventajas                           |                         Desventajas                          |
@@ -96,19 +87,17 @@ En nuestro sistema el tiempo de simulación avanza por medio de una cola de even
 | **Visualización y comprensión:** Los modelos de simulación de eventos discretos a menudo ofrecen herramientas de visualización que permiten observar la simulación en tiempo real. Esto facilita la comprensión del comportamiento del sistema y la identificación de posibles cuellos de botella o áreas problemáticas. |                                                              |
 
 
-En este proyecto se nos proporciona un kickstarter de un modelo de colas sencillo, en el cual contamos con un módulo *Generador*, una *Cola* y un *Consumidor*. En primera instancia se nos pide cambiar este modelo para que sea más completo y tenga en cuenta la nocion de capacidad, es decir la tasa de transferencia de datos y la memoria de los buffers. 
+En este proyecto se nos proporciona un kickstarter de un modelo de colas sencillo, en el cual contamos con un módulo *Generador*, una *Cola* y un *Consumidor*. En primera instancia se nos pide cambiar este modelo para que sea más completo y tenga en cuenta la noción de capacidad, es decir la tasa de transferencia de datos y la memoria de los buffers. 
 
 Agregamos dos nuevos módulos, cada uno compuesto del módulo Generador y Consumidor anteriores. y modificaos la *Network* en base a estos nuevos cambios. Los casos de estudio que se explicarán en detalle más adelante se ajustan en el nuevo nodo Consumidor y en la red.
-Luego de analizar los datos en este modelo. Tendremos que implementar nuevas mejoras para diseñar un sistema de control de flujo y congestión entre el consumidor y el generador, para evitar la pérdida de datos por la saturacion de los buffers. Las modificaciones serán detalladas más adelante.
+Luego de analizar los datos en este modelo. Tendremos que implementar nuevas mejoras para diseñar un sistema de control de flujo y congestión entre el consumidor y el generador, para evitar la pérdida de datos por la saturación de los buffers. Las modificaciones serán detalladas más adelante.
 
 ---
 
-## Presentacion de Casos describiendo modelos (con graficas)
-**Reordenar o chequear el orden de la pregunta y respuesta**
+## Presentación de Casos describiendo modelos (con gráficas)
+- Que diferencia observa entre el caso de estudio 1 y 2? Cual es la fuente limitante en cada uno? Investigue sobre la diferencia entre control de flujo y control de congestión (Figura 6-22 Tanenbaum)
 
-- Que diferencia observa entre el caso de estudio 1 y 2? Cual es la fuente limitante en cada uno? Investigue sobre la diferencia entre control de flujo y control de congestion (Figura 6-22 Tanenbaum)
-
-​	En el caso 1 de estudio, se presenta un problema de control de flujo. Esto se debe a que el host receptor tiene poca capacidad para manejar los paquetes que le envía el productor. Dicho de otra forma, podemos considerar al *Sink* como un proceso encargado de manejar los paquetes que llegan, y en este caso particular, el proceso es lento en comparación con el proceso del generador, es decir, el host emisor. Como resultado, el host receptor o sink pierde paquetes cuando su búfer se llena y no puede almacenar nuevos paquetes entrantes.
+​	En el caso 1 de estudio, se presenta un problema de control de flujo. Esto se debe a que el host receptor tiene poca capacidad para manejar los paquetes que le envía el productor. Dicho de otra forma, podemos considerar al *Sink* como un proceso encargado de manejar los paquetes que llegan, y en este caso particular, el proceso es lento en comparación con el proceso del generador, es decir, el host emisor. Como resultado, el host receptor o sink pierde paquetes cuando su buffer se llena y no puede almacenar nuevos paquetes entrantes.
 
 ​	Por otro lado, en el caso 2 de estudio, el problema es de congestión. El emisor tiene una alta capacidad de producción, pero la capacidad de carga de la subred no puede soportar este tráfico de datos. El nodo Queue no dispone de suficiente capacidad para almacenar y procesar los paquetes enviados por NodeTx. Por lo tanto, se produce pérdida de paquetes en Queue.
 
@@ -150,7 +139,7 @@ Luego de analizar los datos en este modelo. Tendremos que implementar nuevas mej
 
 ​	Los gráficos correspondientes a la simulación con intervalos de generación de paquetes seleccionados a través de la función exponencial centrada en 0.2, 0.3, 0.6 y 1 no son tan relevantes para el análisis, ya que en estos casos ningún buffer alcanza su capacidad máxima y no se producen pérdidas de paquetes. Sin embargo, podemos observar que a medida que el intervalo de generación es más largo en tiempo, la ocupación de los buffers disminuye. Esto se debe a que las tareas de almacenamiento y reenvío se realizan a un ritmo que evita la acumulación excesiva de paquetes en los buffers de los nodos más lentos, en este caso del nodo Rx.
 
-### Caso 2: Problema de congestión 
+### Caso 2 : Problema de congestión 
 
 ​	El análisis es similar al del caso uno, pero con la salvedad de que ahora el nodo que se ve sobrepasado por la carga que transita en la red es el nodo Queue, que vendría a ser la subred que conecta los nodos Tx y Rx.
 
@@ -196,13 +185,13 @@ Luego de analizar los datos en este modelo. Tendremos que implementar nuevas mej
 ### TransportPacket
 Se ha agregado un nuevo tipo de paquete llamado TransportPacket para tener un control más detallado sobre la red y sus posibles problemas de congestión. Este paquete tiene tres atributos importantes.
 #### Variables:
-* slowDown: indica si la red debe reducir su velocidad de transmisión para evitar la congestión. Si esta variable es verdadera, significa que la red debe reducir la velocidad de transmisión para evitar la sobrecarga de los buffers.
+* **slowDown**: indica si la red debe reducir su velocidad de transmisión para evitar la congestión. Si esta variable es verdadera, significa que la red debe reducir la velocidad de transmisión para evitar la sobrecarga de los buffers.
 
-* speedUp: indica si la red debe aumentar su velocidad de transmisión para aprovechar la capacidad no utilizada de los buffers. Si esta variable es verdadera, significa que la red puede aumentar la velocidad de transmisión.
+* **speedUp**: indica si la red debe aumentar su velocidad de transmisión para aprovechar la capacidad no utilizada de los buffers. Si esta variable es verdadera, significa que la red puede aumentar la velocidad de transmisión.
 
-* bufferSize: indica el tamaño del buffer necesario para almacenar el paquete en la cola. Es importante tener en cuenta que si el tamaño del buffer supera la capacidad máxima, los paquetes pueden perderse.
+* **bufferSize**: indica el tamaño del buffer necesario para almacenar el paquete en la cola. Es importante tener en cuenta que si el tamaño del buffer supera la capacidad máxima, los paquetes pueden perderse.
 
-En resumen, TransportPacket es un nuevo tipo de paquete que permite tener un control más detallado sobre la red y sus posibles problemas de congestión. Con las variables slowDown, speedUp y bufferSize, se pueden tomar medidas para evitar la congestión y aprovechar la capacidad no utilizada de los buffers.
+En resumen, TransportPacket es un nuevo tipo de paquete que permite tener un control más detallado sobre la red y sus posibles problemas de congestión. Con las variables slowDown, speedUp y bufferSize, se pueden tomar medidas para evitar la congestión y aprovechar la capacidad no utilizada de los buffers. La implementación es la siguiente:
 
 ```
 class TransportPacket : public cPacket {
@@ -232,20 +221,20 @@ Para resolver este problema, se ha propuesto la implementación de dos nuevas co
 Este código define una clase llamada TransportTx que hereda de la clase cSimpleModule en el framework OMNeT++.
 Esta clase representa un módulo que se encarga de enviar paquetes a través de un canal de comunicación.
 
-- Atributos:
-    - buffer: una cola para almacenar los paquetes que se van a enviar.
-    - endServiceEvent: un mensaje que se utiliza para indicar que el servidor ha terminado de enviar un paquete y está listo para enviar otro.
-    - serviceTime: el tiempo que se tarda en enviar un paquete.
-    - simTimeOffset: un factor de escala utilizado para ajustar el tiempo de simulación.
+- **Atributos**:
+    - _buffer:_ una cola para almacenar los paquetes que se van a enviar.
+    - _endServiceEvent:_ un mensaje que se utiliza para indicar que el servidor ha terminado de enviar un paquete y está listo para enviar otro.
+    - _serviceTime:_ el tiempo que se tarda en enviar un paquete.
+    - _simTimeOffset:_ un factor de escala utilizado para ajustar el tiempo de simulación.
 
-- Métodos:
-    - getBuffer(): devuelve la cola de paquetes que se van a enviar.
-    - getServiceTime(): devuelve el tiempo que se tarda en enviar un paquete.
-    - getEndServiceEvent(): devuelve el mensaje endServiceEvent.
-    - setServiceTime(): establece el tiempo que se tarda en enviar un paquete.
-    - initialize(): inicializa los atributos de la clase.
-    - finish(): se llama al final de la simulación.
-    - handleMessage(): procesa los mensajes recibidos.
+- **Métodos**:
+    - _getBuffer():_ devuelve la cola de paquetes que se van a enviar.
+    - _getServiceTime():_ devuelve el tiempo que se tarda en enviar un paquete.
+    - _getEndServiceEvent():_ devuelve el mensaje endServiceEvent.
+    - _setServiceTime():_ establece el tiempo que se tarda en enviar un paquete.
+    - _initialize():_ inicializa los atributos de la clase.
+    - _finish():_ se llama al final de la simulación.
+    - _handleMessage()_: procesa los mensajes recibidos.
 
 El método initialize() inicializa los miembros de la clase y crea el evento endServiceEvent. El método handleMessage() es el método principal de la clase, que se encarga de procesar los mensajes entrantes y realizar las acciones necesarias.
 
@@ -358,18 +347,18 @@ void TransportTx::handleMessage(cMessage *msg) {
 ### TransportRx:
 TransportRx hereda de la clase cSimpleModule en el framework OMNeT++ para simular un nodo receptor de transporte. 
 
-- Atributos
-    - isSlowed: determina si se está ralentizando o no el tráfico de entrada.
-    - buffer: una cola donde se almacenan los paquetes recibidos.
-    - packetDropVector: se utiliza para almacenar el número de paquetes que se han descartado debido a que el tamaño del buffer ha alcanzado su límite.
-    - bufferSizeVector: se utiliza para almacenar el tamaño actual del buffer.
-    - endServiceEvent: mensaje que se utiliza para señalar el final del servicio de un paquete.
-    - feedBackServiceEvent: mensaje de feedback que se envía a la salida correspondiente.
-    - serviceTime: se utiliza para almacenar el tiempo de servicio de un paquete que se está procesando.
-- Métodos:
-    - initialize(): se utiliza para inicializar las variables de la clase.
-    - handleMessage(): se utiliza para manejar los mensajes que se reciben y se envían.
-    - finish(): se utiliza para finalizar la simulación.
+- **Atributos**
+    - _isSlowed:_ determina si se está ralentizando o no el tráfico de entrada.
+    - _buffer:_ una cola donde se almacenan los paquetes recibidos.
+    - _packetDropVector:_ se utiliza para almacenar el número de paquetes que se han descartado debido a que el tamaño del buffer ha alcanzado su límite.
+    - _bufferSizeVector:_ se utiliza para almacenar el tamaño actual del buffer.
+    - _endServiceEvent:_ mensaje que se utiliza para señalar el final del servicio de un paquete.
+    - _feedBackServiceEvent:_ mensaje de feedback que se envía a la salida correspondiente.
+    - _serviceTime:_ se utiliza para almacenar el tiempo de servicio de un paquete que se está procesando.
+- **Métodos**:
+    - _initialize():_ se utiliza para inicializar las variables de la clase.
+    - _handleMessage():_ se utiliza para manejar los mensajes que se reciben y se envían.
+    - _finish():_ se utiliza para finalizar la simulación.
 
 El método handleMessage comprueba el tipo de mensaje recibido. Si es un mensaje de feedback, lo envía a la salida correspondiente.
 - Si es un paquete de datos, lo encola en el buffer.
@@ -615,7 +604,7 @@ void Queue::handleMessage(cMessage *msg) {
 
 ```
 
-### Extra Info:
+### Información Extra:
 Es importante mencionar que para lograr una mejora en la gestión de la congestión y el flujo en nuestra simulación, tuvimos que agregar el atributo "isSlowed" tanto en la cola de transmisión (Queue) como en el receptor de transporte (TransportRx).
 
 Esta adición fue necesaria para evitar que cada vez que se envíe un paquete, se actualice la cola de transmisión de tal manera que se restablezca la velocidad de envío y, por lo tanto, se deshaga cualquier mejora en la congestión y el flujo que hayamos implementado previamente.
@@ -640,8 +629,6 @@ Nuestra implementacion sirve para ambos problemas debido ya que la solucion al p
 ---
 
 ## Resultados:
-
-**detalle de los resultados de los algoritmos diseñados y una pequeña conclusion.**
 
 ​	Luego de implementar el algoritmo, generamos nuevamente las estadísticas utilizando las mismas configuraciones que en el caso inicial. Esto nos permite tener una representación gráfica de los cambios en el comportamiento de la red de manera más sencilla y visual.
 
@@ -693,7 +680,7 @@ Nuestra implementacion sirve para ambos problemas debido ya que la solucion al p
 	En cuanto al delay, es fácil notar que no alcanza valores muy elevados. Como mencionamos anteriormente, la mayoría de los paquetes enviados por el nodo Tx son recibidos por el sink. Al tener menos paquetes que no llegan "nunca" (es decir, en los 200 segundos de simulación), el promedio general de retardo es bastante bajo y no genera problemas significativos. La subida abrupta en el gráfico está relacionada con los paquetes que quedan en la cola del nodo Rx. Si asumimos que la simulación se ejecutara por unos segundos más sin que el nodo Tx envíe más paquetes, es probable que estos paquetes llegaran correctamente al sink. Estos paquetes adicionales no aumentarían significativamente el promedio general de retardo y probablemente seguiría una tendencia similar a la observada desde los 650 hasta los 950 paquetes aproximadamente.
 ![delay-1](./Graphics/diseño_mejora/1/CargaUtilDelay/delay.png)
 
----
+
 
 ### Caso 2: Problema de congestión 
 
@@ -743,11 +730,9 @@ Nuestra implementacion sirve para ambos problemas debido ya que la solucion al p
 ---
 
 ## Discusión:
-**Logros, limitaciones y posibles mejoras del algoritmo propuesto**.
-
 Dentro de los logros que conseguimos:
 - Mitigar la perdida de paquetes sin generar un delay demasiado grande entre emision y recepcion de paquetes.
-- Abordar ambos problemas con una solucion conjunta.
+- Abordar ambos problemas con una solución conjunta.
 - Ajustar nuestras cotas de análisis para lograr un desempeño optimo.
 
 Es importante mencionar que, aunque los algoritmos utilizados para abordar los problemas de flujo y congestión han sido efectivos, aún hay margen para mejorarlos. Estos algoritmos no son la solución perfecta, y ya existen otros algoritmos más refinados que podrían ser más adecuados para abordar estos problemas.
